@@ -671,18 +671,11 @@ class BipedalWalker(gym.Env, EzPickle):
                 continue
             if x1 > self.scroll / 2 + VIEWPORT_W / SCALE:
                 continue
-            pygame.draw.polygon(
-                self.surf,
-                color=(255, 255, 255),
-                points=[
-                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
-                ],
-            )
-            gfxdraw.aapolygon(
-                self.surf,
-                [(p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly],
-                (255, 255, 255),
-            )
+            points = [
+                (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
+            ]
+            pygame.draw.polygon(self.surf, color=(255, 255, 255), points=points)
+            gfxdraw.aapolygon(self.surf, points, (255, 255, 255))
         for poly, color in self.terrain_poly:
             if poly[1][0] < self.scroll:
                 continue
@@ -714,8 +707,12 @@ class BipedalWalker(gym.Env, EzPickle):
                 pygame.draw.line(
                     self.surf,
                     color=(255, 0, 0),
-                    start_pos=(single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE),
-                    end_pos=(single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE),
+                    start_pos=(
+                        single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE
+                    ),
+                    end_pos=(
+                        single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE
+                    ),
                     width=1,
                 )
 
@@ -764,9 +761,15 @@ class BipedalWalker(gym.Env, EzPickle):
             (x, flagy2 - 10),
             (x + 25, flagy2 - 5),
         ]
-        pygame.draw.polygon(self.surf, color=(230, 51, 0), points=f)
+        pygame.draw.polygon(
+            self.surf, color=(230, 51, 0), points=f
+        )
         pygame.draw.lines(
-            self.surf, color=(0, 0, 0), points=f + [f[0]], width=1, closed=False
+            self.surf,
+            color=(0, 0, 0),
+            points=f + [f[0]],
+            width=1,
+            closed=False
         )
 
         self.surf = pygame.transform.flip(self.surf, False, True)
@@ -779,7 +782,8 @@ class BipedalWalker(gym.Env, EzPickle):
             pygame.display.flip()
         elif self.render_mode == "rgb_array":
             return np.transpose(
-                np.array(pygame.surfarray.pixels3d(self.surf)), axes=(1, 0, 2)
+                np.array(pygame.surfarray.pixels3d(self.surf)),
+                axes=(1, 0, 2)
             )[:, -VIEWPORT_W:]
 
     def close(self):
