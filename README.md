@@ -10,8 +10,8 @@ This project aims to create a 2D walking model for robotics using reinforcement 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/VishwamAirobotics/2d-walking.git
-   cd 2d-walking
+   git clone https://github.com/VishwamAirobotics/2d-robots.git
+   cd 2d-robots
    ```
 
 2. Create a virtual environment:
