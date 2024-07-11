@@ -11,8 +11,8 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=5, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(4,), dtype=np.float32, minimum=0, maximum=100, name='observation')
-        self._state = np.array([0, 0, 0, 0], dtype=np.float32)
+            shape=(6,), dtype=np.float32, minimum=0, maximum=100, name='observation')
+        self._state = np.array([0, 0, 0, 0, 0, 0], dtype=np.float32)  # x, y, orientation, velocity, goal_x, goal_y
         self._episode_ended = False
 
     def action_spec(self):
@@ -22,7 +22,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         return self._observation_spec
 
     def _reset(self):
-        self._state = np.array([0, 0, 0, 0], dtype=np.float32)
+        self._state = np.array([0, 0, 0, 0, 50, 50], dtype=np.float32)  # Reset to initial position and goal
         self._episode_ended = False
         return ts.restart(self._state)
 
@@ -32,21 +32,28 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
 
         # Update the state based on the action
         if action == 0:
-            self._state[0] += 1  # Move right
+            self._state[3] += 1  # Increase velocity
         elif action == 1:
-            self._state[0] -= 1  # Move left
+            self._state[3] -= 1  # Decrease velocity
         elif action == 2:
-            self._state[1] += 1  # Move up
-        elif action == 3:
-            self._state[1] -= 1  # Move down
-        elif action == 4:
             self._state[2] += 1  # Turn right
-        elif action == 5:
+        elif action == 3:
             self._state[2] -= 1  # Turn left
+        elif action == 4:
+            self._state[0] += self._state[3] * np.cos(np.deg2rad(self._state[2]))  # Move forward
+            self._state[1] += self._state[3] * np.sin(np.deg2rad(self._state[2]))  # Move forward
+        elif action == 5:
+            self._state[0] -= self._state[3] * np.cos(np.deg2rad(self._state[2]))  # Move backward
+            self._state[1] -= self._state[3] * np.sin(np.deg2rad(self._state[2]))  # Move backward
 
         # Check if the episode has ended
-        if np.any(self._state < 0) or np.any(self._state > 100):
+        if np.any(self._state[:2] < 0) or np.any(self._state[:2] > 100):
             self._episode_ended = True
+
+        # Check if the goal is reached
+        if np.linalg.norm(self._state[:2] - self._state[4:]) < 1.0:
+            self._episode_ended = True
+            return ts.termination(self._state, reward=10.0)
 
         if self._episode_ended:
             return ts.termination(self._state, reward=0.0)
