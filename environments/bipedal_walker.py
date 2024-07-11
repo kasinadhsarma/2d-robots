@@ -56,32 +56,15 @@ TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
+    shape=polygonShape(
+        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
+    ),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
     maskBits=0x001,  # collide only with ground
     restitution=0.0,
 )  # 0.99 bouncy
-
-state = [
-    self.hull.angle,
-    2.0 * self.hull.angularVelocity / FPS,
-    0.3 * vel.x * (VIEWPORT_W / SCALE) / FPS,
-    0.3 * vel.y * (VIEWPORT_H / SCALE) / FPS,
-    self.joints[0].angle,
-    self.joints[0].speed / SPEED_HIP,
-    self.joints[1].angle + 1.0,
-    self.joints[1].speed / SPEED_KNEE,
-    1.0 if self.legs[1].ground_contact else 0.0,
-    self.joints[2].angle,
-    self.joints[2].speed / SPEED_HIP,
-    self.joints[3].angle + 1.0,
-    self.joints[3].speed / SPEED_KNEE,
-    1.0 if self.legs[3].ground_contact else 0.0,
-]
-state += [lidar.fraction for lidar in self.lidar]
-
 LEG_FD = fixtureDef(
     shape=polygonShape(box=(LEG_W / 2, LEG_H / 2)),
     density=1.0,
