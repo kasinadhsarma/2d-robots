@@ -308,7 +308,9 @@ class BipedalWalker(gym.Env):
 
         if self.viewer is None:
             self.viewer = rendering.Viewer(VIEWPORT_W, VIEWPORT_H)
-            self.viewer.set_bounds(0, VIEWPORT_W / SCALE, 0, VIEWPORT_H / SCALE)
+            self.viewer.set_bounds(
+                0, VIEWPORT_W / SCALE, 0, VIEWPORT_H / SCALE
+            )
 
         for obj in self.drawlist:
             for f in obj.fixtures:
@@ -319,13 +321,16 @@ class BipedalWalker(gym.Env):
                         f.shape.radius, 30, color=obj.color1
                     ).add_attr(t)
                     self.viewer.draw_circle(
-                        f.shape.radius, 30, color=obj.color2, filled=False, linewidth=2
+                        f.shape.radius, 30, color=obj.color2, filled=False,
+                        linewidth=2
                     ).add_attr(t)
                 else:
                     path = [trans * v for v in f.shape.vertices]
                     self.viewer.draw_polygon(path, color=obj.color1)
                     path.append(path[0])
-                    self.viewer.draw_polyline(path, color=obj.color2, linewidth=2)
+                    self.viewer.draw_polyline(
+                        path, color=obj.color2, linewidth=2
+                    )
 
         flagy1 = TERRAIN_HEIGHT
         flagy2 = flagy1 + 50 / SCALE
@@ -654,7 +659,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.integers(TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.integers(
+                    TERRAIN_GRASS / 2, TERRAIN_GRASS
+                )
                 if state == GRASS and hardcore:
                     state = self.np_random.integers(1, _STATES_)
                     oneshot = True
@@ -851,7 +858,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
                 pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
             )
-            self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+            self.world.RayCast(
+                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2
+            )
 
         state = [
             self.hull.angle,
@@ -947,9 +956,14 @@ class BipedalWalkerV2(gym.Env, EzPickle):
             if x1 > self.scroll / 2 + VIEWPORT_W / SCALE:
                 continue
             points = [
-                (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
+                (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                for p in poly
             ]
-            pygame.draw.polygon(self.surf, color=(255, 255, 255), points=points)
+            pygame.draw.polygon(
+                self.surf,
+                color=(255, 255, 255),
+                points=points
+            )
             gfxdraw.aapolygon(self.surf, points, (255, 255, 255))
         for poly, color in self.terrain_poly:
             if poly[1][0] < self.scroll:
@@ -961,7 +975,6 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 scaled_poly.append([coord[0] * SCALE, coord[1] * SCALE])
             pygame.draw.polygon(self.surf, color=color, points=scaled_poly)
             gfxdraw.aapolygon(self.surf, scaled_poly, color)
-
         self.lidar_render = (self.lidar_render + 1) % 100
         i = self.lidar_render
         if i < 2 * len(self.lidar):
