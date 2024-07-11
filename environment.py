@@ -47,8 +47,14 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
             self._state[0] -= self._state[3] * np.cos(np.deg2rad(self._state[2]))  # Move backward
             self._state[1] -= self._state[3] * np.sin(np.deg2rad(self._state[2]))  # Move backward
 
+        # Update obstacle information in the state
+        for i, obstacle in enumerate(self._obstacles):
+            self._state[6 + i * 3] = obstacle[0]
+            self._state[7 + i * 3] = obstacle[1]
+            self._state[8 + i * 3] = np.linalg.norm(self._state[:2] - obstacle)
+
         # Check if the episode has ended
-        if np.any(self._state[:2] < 0) or np.any(self._state[:2] > 100):
+        if np.any(self._state[:2] < 0) or np.any(self._state[:2] > 200):
             self._episode_ended = True
 
         # Check for collisions with obstacles
@@ -58,7 +64,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
                 return ts.termination(self._get_observation(), reward=-10.0)
 
         # Check if the goal is reached
-        if np.linalg.norm(self._state[:2] - self._state[4:]) < 1.0:
+        if np.linalg.norm(self._state[:2] - self._state[4:6]) < 1.0:
             self._episode_ended = True
             return ts.termination(self._get_observation(), reward=10.0)
 
@@ -68,12 +74,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
             return ts.transition(self._get_observation(), reward=1.0, discount=0.9)
 
     def _get_observation(self):
-        # Include obstacle positions in the observation
-        obstacle_distances = []
-        for obstacle in self._obstacles:
-            distance = np.linalg.norm(self._state[:2] - obstacle)
-            obstacle_distances.extend([obstacle[0], obstacle[1], distance])
-        return np.concatenate((self._state, obstacle_distances))
+        return self._state
 
 # Create the environment
 train_py_env = BirdRobotEnvironment()
