@@ -33,6 +33,7 @@ This project aims to develop a 2D simulation of bird robots with reinforcement l
    ```bash
    python3 train_agent.py
    ```
+   **Note:** The training process can take a significant amount of time. Please ensure that the process completes before proceeding to the next step.
 
 5. Test the trained reinforcement learning agent:
    ```bash
