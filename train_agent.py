@@ -109,12 +109,22 @@ for _ in range(num_iterations):
             log=True)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
 
-# Create the policy directory if it doesn't exist
+    # Attempt to save the policy periodically
+    if step % eval_interval == 0:
+        policy_dir = POLICY_DIR
+        if not os.path.exists(policy_dir):
+            os.makedirs(policy_dir)
+        try:
+            tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+            print(f"Policy saved successfully in {policy_dir} at step {step}")
+        except Exception as e:
+            print(f"Error saving policy at step {step}: {e}")
+
+# Final save of the trained policy
 policy_dir = POLICY_DIR
 if not os.path.exists(policy_dir):
     os.makedirs(policy_dir)
 
-# Save the trained policy
 try:
     tf.compat.v2.saved_model.save(agent.policy, policy_dir)
     print(f"Policy saved successfully in {policy_dir}")
