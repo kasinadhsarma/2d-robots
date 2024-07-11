@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from tf_agents.environments import tf_py_environment
-from tf_agents.policies import policy_saver
+from tf_agents.policies import policy_saver, SavedModelPyTFEagerPolicy
 from tf_agents.trajectories import time_step as ts
 from src.environment import BirdRobotEnvironment
 from config.config import POLICY_DIR
@@ -17,7 +17,7 @@ def load_policy(policy_dir):
         tf_policy: The loaded policy.
     """
     try:
-        policy = tf.compat.v2.saved_model.load(policy_dir)
+        policy = SavedModelPyTFEagerPolicy(policy_dir)
         return policy
     except Exception as e:
         print(f"Error loading policy: {e}")
