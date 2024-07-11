@@ -12,7 +12,7 @@ from tf_agents.metrics import tf_metrics
 from tf_agents.eval import metric_utils
 
 from environment import BirdRobotEnvironment
-from config import CONTROL_FREQUENCY, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP
+from config import CONTROL_FREQUENCY, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP, NUM_ITERATIONS, COLLECT_STEPS_PER_ITERATION, LOG_INTERVAL, EVAL_INTERVAL, POLICY_DIR
 import os
 
 # Set up the environment
@@ -80,10 +80,10 @@ dataset = replay_buffer.as_dataset(
 iterator = iter(dataset)
 
 # Set up the training loop
-num_iterations = 20000
-collect_steps_per_iteration = 1
-log_interval = 200
-eval_interval = 1000
+num_iterations = NUM_ITERATIONS
+collect_steps_per_iteration = COLLECT_STEPS_PER_ITERATION
+log_interval = LOG_INTERVAL
+eval_interval = EVAL_INTERVAL
 
 # Training loop
 for _ in range(num_iterations):
@@ -108,9 +108,13 @@ for _ in range(num_iterations):
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
 
 # Create the policy directory if it doesn't exist
-policy_dir = 'policy'
+policy_dir = POLICY_DIR
 if not os.path.exists(policy_dir):
     os.makedirs(policy_dir)
 
 # Save the trained policy
-tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+try:
+    tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+    print(f"Policy saved successfully in {policy_dir}")
+except Exception as e:
+    print(f"Error saving policy: {e}")
