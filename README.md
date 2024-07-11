@@ -1,12 +1,12 @@
 # 2D Bird Robots Project
 
 ## Introduction
-This project aims to develop a 2D simulation of bird robots. The simulation will include various functionalities such as movement, control, and sensor integration. The architecture is designed to be modular and extensible, allowing for easy integration of new features and functionalities.
+This project aims to develop a 2D simulation of bird robots with reinforcement learning capabilities. The simulation includes various functionalities such as movement, control, sensor integration, and a digital room environment for practice. The architecture is designed to be modular and extensible, allowing for easy integration of new features and functionalities.
 
 ## Project Structure
-- `movement.py`: Contains the movement algorithms for the bird robots.
-- `control.py`: Handles the overall control logic for the bird robots.
-- `sensors.py`: Integrates and processes data from various sensors.
+- `environment.py`: Defines the reinforcement learning environment for the bird robots.
+- `train_agent.py`: Script for training the reinforcement learning agent.
+- `test_agent.py`: Script for testing the trained reinforcement learning agent.
 - `config.py`: Defines configuration parameters for the project.
 - `requirements.txt`: Lists the project dependencies.
 - `ARCHITECTURE.md`: Provides an overview of the project architecture.
@@ -29,9 +29,14 @@ This project aims to develop a 2D simulation of bird robots. The simulation will
    pip install -r requirements.txt
    ```
 
-4. Run the project (placeholder for actual run instructions):
+4. Train the reinforcement learning agent:
    ```bash
-   # Add instructions to run the project here
+   python3 train_agent.py
+   ```
+
+5. Test the trained reinforcement learning agent:
+   ```bash
+   python3 test_agent.py
    ```
 
 ## Contributing
