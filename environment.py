@@ -8,7 +8,22 @@ import numpy as np
 from config import MAX_SPEED, ACCELERATION, TURN_RATE, SENSOR_RANGE, SENSOR_ANGLE, CONTROL_FREQUENCY, SIMULATION_TIME_STEP, COLLISION_DISTANCE, BOUNDARY_MIN, BOUNDARY_MAX, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP, BOUNDARY_OFFSET, INITIAL_ORIENTATION
 
 class BirdRobotEnvironment(py_environment.PyEnvironment):
+    """
+    Custom environment for a 2D bird robot navigating through obstacles towards a goal.
+    """
+
+    ACTION_ACCELERATE = 0
+    ACTION_DECELERATE = 1
+    ACTION_TURN_RIGHT = 2
+    ACTION_TURN_LEFT = 3
+    ACTION_MOVE_FORWARD = 4
+    ACTION_MOVE_BACKWARD = 5
+
     def __init__(self):
+        """
+        Initializes the BirdRobotEnvironment with action and observation specifications,
+        and sets up the initial state and obstacles.
+        """
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=5, name='action')
         self._obstacles = [np.array([20, 20]), np.array([40, 40]), np.array([60, 60])]  # Example obstacles
@@ -25,6 +40,9 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         return self._observation_spec
 
     def _reset(self):
+        """
+        Resets the environment to its initial state at the start of a new episode.
+        """
         num_obstacles = len(self._obstacles)
         self._state = np.zeros(6 + num_obstacles * 3, dtype=np.float32)  # Reset to initial position and goal
         self._state[:2] = [BOUNDARY_MIN + BOUNDARY_OFFSET, BOUNDARY_MIN + BOUNDARY_OFFSET]  # Set initial position
@@ -38,22 +56,25 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         return ts.restart(self._get_observation())
 
     def _step(self, action):
+        """
+        Updates the environment state based on the action taken by the agent.
+        """
         if self._episode_ended:
             return self.reset()
 
         # Update the state based on the action
-        if action == 0:
+        if action == self.ACTION_ACCELERATE:
             self._state[3] += ACCELERATION  # Increase velocity
-        elif action == 1:
+        elif action == self.ACTION_DECELERATE:
             self._state[3] -= ACCELERATION  # Decrease velocity
-        elif action == 2:
+        elif action == self.ACTION_TURN_RIGHT:
             self._state[2] += TURN_RATE  # Turn right
-        elif action == 3:
+        elif action == self.ACTION_TURN_LEFT:
             self._state[2] -= TURN_RATE  # Turn left
-        elif action == 4:
+        elif action == self.ACTION_MOVE_FORWARD:
             self._state[0] += self._state[3] * np.cos(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move forward
             self._state[1] += self._state[3] * np.sin(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move forward
-        elif action == 5:
+        elif action == self.ACTION_MOVE_BACKWARD:
             self._state[0] -= self._state[3] * np.cos(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move backward
             self._state[1] -= self._state[3] * np.sin(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move backward
 
