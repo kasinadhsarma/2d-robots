@@ -5,7 +5,7 @@ from tf_agents.environments import tf_py_environment
 from tf_agents.specs import array_spec
 from tf_agents.trajectories import time_step as ts
 import numpy as np
-from config import MAX_SPEED, ACCELERATION, TURN_RATE, SENSOR_RANGE, SENSOR_ANGLE, CONTROL_FREQUENCY, SIMULATION_TIME_STEP
+from config import MAX_SPEED, ACCELERATION, TURN_RATE, SENSOR_RANGE, SENSOR_ANGLE, CONTROL_FREQUENCY, SIMULATION_TIME_STEP, COLLISION_DISTANCE, BOUNDARY_MIN, BOUNDARY_MAX, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP
 
 class BirdRobotEnvironment(py_environment.PyEnvironment):
     def __init__(self):
@@ -66,24 +66,24 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
                 self._state[8 + i * 3] = SENSOR_RANGE
 
         # Check if the episode has ended
-        if np.any(self._state[:2] < 0) or np.any(self._state[:2] > 200):
+        if np.any(self._state[:2] < BOUNDARY_MIN) or np.any(self._state[:2] > BOUNDARY_MAX):
             self._episode_ended = True
 
         # Check for collisions with obstacles
         for obstacle in self._obstacles:
-            if np.linalg.norm(self._state[:2] - obstacle) < 1.0:
+            if np.linalg.norm(self._state[:2] - obstacle) < COLLISION_DISTANCE:
                 self._episode_ended = True
-                return ts.termination(self._get_observation(), reward=-10.0)
+                return ts.termination(self._get_observation(), reward=REWARD_COLLISION)
 
         # Check if the goal is reached
-        if np.linalg.norm(self._state[:2] - self._state[4:6]) < 1.0:
+        if np.linalg.norm(self._state[:2] - self._state[4:6]) < COLLISION_DISTANCE:
             self._episode_ended = True
-            return ts.termination(self._get_observation(), reward=10.0)
+            return ts.termination(self._get_observation(), reward=REWARD_GOAL)
 
         if self._episode_ended:
             return ts.termination(self._get_observation(), reward=0.0)
         else:
-            return ts.transition(self._get_observation(), reward=1.0, discount=0.9)
+            return ts.transition(self._get_observation(), reward=REWARD_STEP, discount=0.9)
 
     def _get_observation(self):
         return self._state
