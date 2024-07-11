@@ -127,8 +127,8 @@ class BipedalWalker(gym.Env, EzPickle):
     ## Observation Space
     State consists of hull angle speed, angular velocity, horizontal speed,
     vertical speed, position of joints and joints angular speed, legs contact
-    with ground, and 10 lidar rangefinder measurements. There are no coordinates
-    in the state vector.
+    with ground, and 10 lidar rangefinder measurements.
+    There are no coordinates in the state vector.
 
     ## Rewards
     Reward is given for moving forward, totaling 300+ points up to the far end.
@@ -149,7 +149,9 @@ class BipedalWalker(gym.Env, EzPickle):
 
     ```python
     >>> import gymnasium as gym
-    >>> env = gym.make("BipedalWalker-v3", hardcore=True, render_mode="rgb_array")
+    >>> env = gym.make(
+        "BipedalWalker-v3", hardcore=True, render_mode="rgb_array"
+    )
     >>> env
     <TimeLimit<OrderEnforcing<PassiveEnvChecker<BipedalWalker<BipedalWalker-v3>>>>>
 
@@ -176,7 +178,9 @@ class BipedalWalker(gym.Env, EzPickle):
         "render_fps": FPS,
     }
 
-    def __init__(self, render_mode: Optional[str] = None, hardcore: bool = False):
+    def __init__(
+        self, render_mode: Optional[str] = None, hardcore: bool = False
+    ):
         EzPickle.__init__(self, render_mode, hardcore)
         self.isopen = True
 
@@ -365,7 +369,9 @@ class BipedalWalker(gym.Env, EzPickle):
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.integers(TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.integers(
+                    TERRAIN_GRASS / 2, TERRAIN_GRASS
+                )
                 if state == GRASS and hardcore:
                     state = self.np_random.integers(1, _STATES_)
                     oneshot = True
