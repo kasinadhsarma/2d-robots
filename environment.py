@@ -11,8 +11,8 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=5, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(6,), dtype=np.float32, minimum=0, maximum=100, name='observation')
-        self._state = np.array([0, 0, 0, 0, 0, 0], dtype=np.float32)  # x, y, orientation, velocity, goal_x, goal_y
+            shape=(12,), dtype=np.float32, minimum=0, maximum=200, name='observation')
+        self._state = np.array([0, 0, 0, 0, 50, 50, 0, 0, 0, 0, 0, 0], dtype=np.float32)  # x, y, orientation, velocity, goal_x, goal_y, obstacle_x1, obstacle_y1, distance1, obstacle_x2, obstacle_y2, distance2
         self._episode_ended = False
         self._obstacles = [np.array([20, 20]), np.array([40, 40]), np.array([60, 60])]  # Example obstacles
 
@@ -23,9 +23,9 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         return self._observation_spec
 
     def _reset(self):
-        self._state = np.array([0, 0, 0, 0, 50, 50], dtype=np.float32)  # Reset to initial position and goal
+        self._state = np.array([0, 0, 0, 0, 50, 50, 0, 0, 0, 0, 0, 0], dtype=np.float32)  # Reset to initial position and goal
         self._episode_ended = False
-        return ts.restart(self._state)
+        return ts.restart(self._get_observation())
 
     def _step(self, action):
         if self._episode_ended:
@@ -55,17 +55,25 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         for obstacle in self._obstacles:
             if np.linalg.norm(self._state[:2] - obstacle) < 1.0:
                 self._episode_ended = True
-                return ts.termination(self._state, reward=-10.0)
+                return ts.termination(self._get_observation(), reward=-10.0)
 
         # Check if the goal is reached
         if np.linalg.norm(self._state[:2] - self._state[4:]) < 1.0:
             self._episode_ended = True
-            return ts.termination(self._state, reward=10.0)
+            return ts.termination(self._get_observation(), reward=10.0)
 
         if self._episode_ended:
-            return ts.termination(self._state, reward=0.0)
+            return ts.termination(self._get_observation(), reward=0.0)
         else:
-            return ts.transition(self._state, reward=1.0, discount=0.9)
+            return ts.transition(self._get_observation(), reward=1.0, discount=0.9)
+
+    def _get_observation(self):
+        # Include obstacle positions in the observation
+        obstacle_distances = []
+        for obstacle in self._obstacles:
+            distance = np.linalg.norm(self._state[:2] - obstacle)
+            obstacle_distances.extend([obstacle[0], obstacle[1], distance])
+        return np.concatenate((self._state, obstacle_distances))
 
 # Create the environment
 train_py_env = BirdRobotEnvironment()
