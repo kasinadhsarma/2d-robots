@@ -55,6 +55,9 @@ TERRAIN_GRASS = 10  # low long are grass spots, in steps
 TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
+TERRAIN_STEPS = 20  # Define the missing constant
+GRAVITY = 9.8  # Define the missing constant
+
 HULL_FD = fixtureDef(
     shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
     density=5.0,
@@ -200,8 +203,6 @@ class BipedalWalker(gym.Env):
         self._destroy()
         self.world.contactListener_keepref = ContactDetector(self)
         self.world.contactListener = self.world.contactListener_keepref
-        W = VIEWPORT_W / SCALE
-        H = VIEWPORT_H / SCALE
 
         self.hull = self.world.CreateDynamicBody(
             position=(VIEWPORT_W / SCALE / 2, VIEWPORT_H / SCALE / 2),
@@ -249,9 +250,13 @@ class BipedalWalker(gym.Env):
         return self.step(np.array([0, 0, 0, 0]))[0]
 
     def step(self, action):
-        self.hull.ApplyForceToCenter((0, -GRAVITY * self.hull.mass), True)
+        self.hull.ApplyForceToCenter(
+            (0, -GRAVITY * self.hull.mass), True
+        )
         for i in range(2):
-            self.joints[i].motorSpeed = float(MOTORS_TORQUE * np.clip(action[i], -1, 1))
+            self.joints[i].motorSpeed = float(
+                MOTORS_TORQUE * np.clip(action[i], -1, 1)
+            )
         self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
 
         pos = self.hull.position
