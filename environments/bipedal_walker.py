@@ -56,7 +56,9 @@ TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
+    shape=polygonShape(
+        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
+    ),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
@@ -177,7 +179,9 @@ class BipedalWalker(gym.Env, EzPickle):
         "render_fps": FPS,
     }
 
-    def __init__(self, render_mode: Optional[str] = None, hardcore: bool = False):
+    def __init__(
+        self, render_mode: Optional[str] = None, hardcore: bool = False
+    ):
         EzPickle.__init__(self, render_mode, hardcore)
         self.isopen = True
 
@@ -366,7 +370,9 @@ class BipedalWalker(gym.Env, EzPickle):
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.integers(TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.integers(
+                    TERRAIN_GRASS / 2, TERRAIN_GRASS
+                )
                 if state == GRASS and hardcore:
                     state = self.np_random.integers(1, _STATES_)
                     oneshot = True
@@ -513,10 +519,18 @@ class BipedalWalker(gym.Env, EzPickle):
         # )  # Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
-            self.joints[0].motorSpeed = float(SPEED_HIP * np.clip(action[0], -1, 1))
-            self.joints[1].motorSpeed = float(SPEED_KNEE * np.clip(action[1], -1, 1))
-            self.joints[2].motorSpeed = float(SPEED_HIP * np.clip(action[2], -1, 1))
-            self.joints[3].motorSpeed = float(SPEED_KNEE * np.clip(action[3], -1, 1))
+            self.joints[0].motorSpeed = float(
+                SPEED_HIP * np.clip(action[0], -1, 1)
+            )
+            self.joints[1].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[1], -1, 1)
+            )
+            self.joints[2].motorSpeed = float(
+                SPEED_HIP * np.clip(action[2], -1, 1)
+            )
+            self.joints[3].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[3], -1, 1)
+            )
         else:
             self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
@@ -547,7 +561,9 @@ class BipedalWalker(gym.Env, EzPickle):
                 pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
                 pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
             )
-            self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+            self.world.RayCast(
+                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2
+            )
 
         state = [
             self.hull.angle,
@@ -570,7 +586,8 @@ class BipedalWalker(gym.Env, EzPickle):
 
         self.scroll = pos.x - VIEWPORT_W / SCALE / 5
 
-        shaping = 200 * pos[0] / SCALE  # Adjusted reward shaping for digital walking
+        shaping = 200 * pos[0] / SCALE  # Adjusted reward shaping
+        # for digital walking
         shaping -= 20.0 * abs(state[0])  # Increased penalty for head tilt
 
         reward = 0
