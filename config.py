@@ -14,3 +14,15 @@ CONTROL_FREQUENCY = 10  # Frequency of the control loop in Hz
 
 # Other parameters
 SIMULATION_TIME_STEP = 0.1  # Time step for the simulation in seconds
+
+# Collision parameters
+COLLISION_DISTANCE = 1.0  # Distance threshold for collision detection
+
+# Boundary parameters
+BOUNDARY_MIN = 0  # Minimum boundary value for the environment
+BOUNDARY_MAX = 200  # Maximum boundary value for the environment
+
+# Reward parameters
+REWARD_COLLISION = -10.0  # Reward for collision
+REWARD_GOAL = 10.0  # Reward for reaching the goal
+REWARD_STEP = 1.0  # Reward for each step taken
