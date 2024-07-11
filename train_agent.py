@@ -109,8 +109,8 @@ for _ in range(num_iterations):
             log=True)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
 
-    # Attempt to save the policy periodically
-    if step % eval_interval == 0:
+    # Attempt to save the policy more frequently for debugging purposes
+    if step % (eval_interval // 10) == 0:
         policy_dir = POLICY_DIR
         if not os.path.exists(policy_dir):
             os.makedirs(policy_dir)
