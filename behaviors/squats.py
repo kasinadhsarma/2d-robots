@@ -2,6 +2,7 @@ import gym
 import numpy as np
 from gym import spaces
 
+
 class SquatEnv(gym.Env):
     """
     Custom Environment for Squat Exercise
@@ -9,8 +10,10 @@ class SquatEnv(gym.Env):
 
     def __init__(self):
         super(SquatEnv, self).__init__()
-        self.action_space = spaces.Box(low=np.array([-1]), high=np.array([1]), dtype=np.float32)
-        self.observation_space = spaces.Box(low=np.array([-np.pi, -5.0, -5.0]), high=np.array([np.pi, 5.0, 5.0]), dtype=np.float32)
+        self.action_space = spaces.Box(
+            low=np.array([-1]), high=np.array([1]), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=np.array([-np.pi, -5.0, -5.0]), high=np.array([np.pi, 5.0, 5.0]), dtype=np.float32)
         self.state = None
         self.reset()
 
