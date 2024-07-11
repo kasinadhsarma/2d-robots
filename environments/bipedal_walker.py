@@ -759,7 +759,9 @@ class BipedalWalker(gym.Env, EzPickle):
             (x, flagy2 - 10),
             (x + 25, flagy2 - 5),
         ]
-        pygame.draw.polygon(self.surf, color=(230, 51, 0), points=f)
+        pygame.draw.polygon(
+            self.surf, color=(230, 51, 0), points=f
+        )
         pygame.draw.lines(
             self.surf, color=(0, 0, 0), points=f + [f[0]], width=1, closed=False
         )
