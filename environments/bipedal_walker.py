@@ -472,7 +472,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
         "render_fps": FPS,
     }
 
-    def __init__(self, render_mode: Optional[str] = None, hardcore: bool = False):
+    def __init__(
+        self, render_mode: Optional[str] = None, hardcore: bool = False
+    ):
         EzPickle.__init__(self, render_mode, hardcore)
         self.isopen = True
 
@@ -980,8 +982,12 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 pygame.draw.line(
                     self.surf,
                     color=(255, 0, 0),
-                    start_pos=(single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE),
-                    end_pos=(single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE),
+                    start_pos=(
+                        single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE
+                    ),
+                    end_pos=(
+                        single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE
+                    ),
                     width=1,
                 )
 
