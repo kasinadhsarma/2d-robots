@@ -51,11 +51,19 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
             self._state[0] -= self._state[3] * np.cos(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move backward
             self._state[1] -= self._state[3] * np.sin(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move backward
 
+        # Ensure the velocity does not exceed MAX_SPEED
+        self._state[3] = np.clip(self._state[3], -MAX_SPEED, MAX_SPEED)
+
         # Update obstacle information in the state
         for i, obstacle in enumerate(self._obstacles):
             self._state[6 + i * 3] = obstacle[0]
             self._state[7 + i * 3] = obstacle[1]
-            self._state[8 + i * 3] = np.linalg.norm(self._state[:2] - obstacle)
+            distance = np.linalg.norm(self._state[:2] - obstacle)
+            angle = np.arctan2(obstacle[1] - self._state[1], obstacle[0] - self._state[0]) - np.deg2rad(self._state[2])
+            if distance <= SENSOR_RANGE and np.abs(np.rad2deg(angle)) <= SENSOR_ANGLE / 2:
+                self._state[8 + i * 3] = distance
+            else:
+                self._state[8 + i * 3] = SENSOR_RANGE
 
         # Check if the episode has ended
         if np.any(self._state[:2] < 0) or np.any(self._state[:2] > 200):
