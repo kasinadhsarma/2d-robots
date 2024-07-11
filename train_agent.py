@@ -15,6 +15,8 @@ from environment import BirdRobotEnvironment
 from config import CONTROL_FREQUENCY, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP, NUM_ITERATIONS, COLLECT_STEPS_PER_ITERATION, LOG_INTERVAL, EVAL_INTERVAL, POLICY_DIR
 import os
 
+print(f"POLICY_DIR is set to: {POLICY_DIR}")
+
 # Set up the environment
 train_py_env = BirdRobotEnvironment()
 eval_py_env = BirdRobotEnvironment()
@@ -86,47 +88,52 @@ log_interval = LOG_INTERVAL
 eval_interval = EVAL_INTERVAL
 
 # Training loop
-for _ in range(num_iterations):
-    # Collect a few steps and save to the replay buffer
-    collect_driver.run()
-
-    # Sample a batch of data from the replay buffer and update the agent's network
-    experience, _ = next(iterator)
-    train_loss = agent.train(experience).loss
-
-    step = agent.train_step_counter.numpy()
-
-    if step % log_interval == 0:
-        print('step = {0}: loss = {1}'.format(step, train_loss))
-
-    if step % eval_interval == 0:
-        avg_return = metric_utils.compute_summaries(
-            metrics=train_metrics,
-            environment=eval_env,
-            policy=agent.policy,
-            num_episodes=10,
-            tf_summaries=False,
-            log=True)
-        print('step = {0}: Average Return = {1}'.format(step, avg_return))
-
-    # Attempt to save the policy more frequently for debugging purposes
-    if step % (eval_interval // 10) == 0:
-        policy_dir = POLICY_DIR
-        if not os.path.exists(policy_dir):
-            os.makedirs(policy_dir)
-        try:
-            tf.compat.v2.saved_model.save(agent.policy, policy_dir)
-            print(f"Policy saved successfully in {policy_dir} at step {step}")
-        except Exception as e:
-            print(f"Error saving policy at step {step}: {e}")
-
-# Final save of the trained policy
-policy_dir = POLICY_DIR
-if not os.path.exists(policy_dir):
-    os.makedirs(policy_dir)
-
 try:
-    tf.compat.v2.saved_model.save(agent.policy, policy_dir)
-    print(f"Policy saved successfully in {policy_dir}")
+    for _ in range(num_iterations):
+        # Collect a few steps and save to the replay buffer
+        collect_driver.run()
+
+        # Sample a batch of data from the replay buffer and update the agent's network
+        experience, _ = next(iterator)
+        train_loss = agent.train(experience).loss
+
+        step = agent.train_step_counter.numpy()
+
+        if step % log_interval == 0:
+            print('step = {0}: loss = {1}'.format(step, train_loss))
+
+        if step % eval_interval == 0:
+            avg_return = metric_utils.compute_summaries(
+                metrics=train_metrics,
+                environment=eval_env,
+                policy=agent.policy,
+                num_episodes=10,
+                tf_summaries=False,
+                log=True)
+            print('step = {0}: Average Return = {1}'.format(step, avg_return))
+
+        # Attempt to save the policy more frequently for debugging purposes
+        if step % (eval_interval // 10) == 0:
+            policy_dir = POLICY_DIR
+            print(f"Attempting to save policy at step {step} in directory {policy_dir}")
+            if not os.path.exists(policy_dir):
+                os.makedirs(policy_dir)
+            try:
+                tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+                print(f"Policy saved successfully in {policy_dir} at step {step}")
+            except Exception as e:
+                print(f"Error saving policy at step {step}: {e}")
+
+    # Final save of the trained policy
+    policy_dir = POLICY_DIR
+    print(f"Attempting final save of policy in directory {policy_dir}")
+    if not os.path.exists(policy_dir):
+        os.makedirs(policy_dir)
+
+    try:
+        tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+        print(f"Policy saved successfully in {policy_dir}")
+    except Exception as e:
+        print(f"Error saving policy: {e}")
 except Exception as e:
-    print(f"Error saving policy: {e}")
+    print(f"An unexpected error occurred during training: {e}")

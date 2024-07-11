@@ -38,4 +38,5 @@ LOG_INTERVAL = 200  # Interval for logging training progress
 EVAL_INTERVAL = 1000  # Interval for evaluating the agent's performance
 
 # Policy directory
-POLICY_DIR = 'policy'  # Directory to save the trained policy
+import os
+POLICY_DIR = os.path.join(os.path.dirname(__file__), 'policy')  # Directory to save the trained policy
