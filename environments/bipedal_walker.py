@@ -914,8 +914,8 @@ class BipedalWalkerV2(gym.Env, EzPickle):
         if self.render_mode is None:
             assert self.spec is not None
             gym.logger.warn(
-                "You are calling render method without specifying any render mode. " \
-                "You can specify the render_mode at initialization, " \
+                "You are calling render method without specifying any render mode. "
+                "You can specify the render_mode at initialization, "
                 f'gym.make("{self.spec.id}", render_mode="rgb_array")'
             )
             return
@@ -1050,7 +1050,7 @@ class BipedalWalkerV2(gym.Env, EzPickle):
         ]
         pygame.draw.polygon(self.surf, color=(230, 51, 0), points=f)
         pygame.draw.lines(
-    self.surf, color=(0, 0, 0), points=f + [f[0]], width=1, \
+            self.surf, color=(0, 0, 0), points=f + [f[0]], width=1
         )
 
         self.surf = pygame.transform.flip(self.surf, False, True)
