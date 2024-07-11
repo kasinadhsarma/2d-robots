@@ -51,11 +51,11 @@ If you encounter TensorFlow-specific errors, ensure that TensorFlow and TF-Agent
 ## Contributing
 Contributions are welcome! Please fork the repository and create a pull request with your changes. Ensure that your code follows the project's coding standards and includes appropriate tests. When submitting a pull request, provide a clear description of the changes and the motivation behind them.
 
+## Contact
+For support or to report issues, please open an issue on the GitHub repository or contact the project maintainers at vishwa@airobotics.com.
+
 ## License
 This project is licensed under the Apache License, Version 2.0. See the LICENSE file for more details.
 
-## Contact
-For support or to report issues, please open an issue on the GitHub repository or contact the project maintainers at [email@example.com].
-
 ## Acknowledgments
-We would like to thank the contributors and the open-source community for their valuable resources and support in making this project possible.
+We would like to thank the contributors and the open-source community for their valuable resources and support in making this project possible. Special thanks to the Vishwam Airobotics team for their dedication and hard work.
