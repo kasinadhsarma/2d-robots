@@ -1,0 +1,6 @@
+numpy
+gym
+tensorflow
+tf-agents
+flake8
+pytest
