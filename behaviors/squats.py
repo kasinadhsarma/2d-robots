@@ -30,7 +30,9 @@ class SquatEnv(gym.Env):
         vertical_velocity = -np.abs(np.sin(angle)) * 5.0
         depth += action[1] * 0.1
 
-        self.state = np.array([angle, angular_velocity, vertical_velocity, depth])
+        self.state = np.array([
+            angle, angular_velocity, vertical_velocity, depth
+        ])
 
         reward = -np.abs(angle)  # Reward for maintaining upright position
         if np.abs(angle) < 0.1:
