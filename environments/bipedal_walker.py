@@ -513,7 +513,9 @@ class BipedalWalker(gym.Env, EzPickle):
     def step(self, action: np.ndarray):
         assert self.hull is not None
 
-        # self.hull.ApplyForceToCenter((0, 20), True) -- Uncomment this to receive a bit of stability help
+        # self.hull.ApplyForceToCenter(
+        #     (0, 20), True
+        # )  # Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
             self.joints[0].motorSpeed = float(
@@ -558,7 +560,9 @@ class BipedalWalker(gym.Env, EzPickle):
                 pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
                 pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
             )
-            self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+            self.world.RayCast(
+                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2
+            )
 
         state = [
             self.hull.angle,
@@ -581,7 +585,9 @@ class BipedalWalker(gym.Env, EzPickle):
 
         self.scroll = pos.x - VIEWPORT_W / SCALE / 5
 
-        shaping = 200 * pos[0] / SCALE  # Adjusted reward shaping for digital walking
+        shaping = (
+            200 * pos[0] / SCALE
+        )  # Adjusted reward shaping for digital walking
         shaping -= 20.0 * abs(state[0])  # Increased penalty for head tilt
 
         reward = 0
@@ -590,7 +596,9 @@ class BipedalWalker(gym.Env, EzPickle):
         self.prev_shaping = shaping
 
         for a in action:
-            reward -= 0.001 * MOTORS_TORQUE * np.clip(np.abs(a), 0, 1)  # Adjusted motor penalty
+            reward -= 0.001 * MOTORS_TORQUE * np.clip(
+                np.abs(a), 0, 1
+            )  # Adjusted motor penalty
 
         terminated = False
         if self.game_over or pos[0] < 0:
