@@ -661,7 +661,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.integers(TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.integers(
+                    TERRAIN_GRASS / 2, TERRAIN_GRASS
+                )
                 if state == GRASS and hardcore:
                     state = self.np_random.integers(1, _STATES_)
                     oneshot = True
@@ -850,7 +852,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
                 pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
             )
-            self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+            self.world.RayCast(
+                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2
+            )
 
         state = [
             self.hull.angle,
@@ -946,9 +950,12 @@ class BipedalWalkerV2(gym.Env, EzPickle):
             if x1 > self.scroll / 2 + VIEWPORT_W / SCALE:
                 continue
             points = [
-                (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
+                (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                for p in poly
             ]
-            pygame.draw.polygon(self.surf, color=(255, 255, 255), points=points)
+            pygame.draw.polygon(
+                self.surf, color=(255, 255, 255), points=points
+            )
             gfxdraw.aapolygon(self.surf, points, (255, 255, 255))
         for poly, color in self.terrain_poly:
             if poly[1][0] < self.scroll:
