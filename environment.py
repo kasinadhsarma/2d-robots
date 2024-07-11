@@ -14,6 +14,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
             shape=(6,), dtype=np.float32, minimum=0, maximum=100, name='observation')
         self._state = np.array([0, 0, 0, 0, 0, 0], dtype=np.float32)  # x, y, orientation, velocity, goal_x, goal_y
         self._episode_ended = False
+        self._obstacles = [np.array([20, 20]), np.array([40, 40]), np.array([60, 60])]  # Example obstacles
 
     def action_spec(self):
         return self._action_spec
@@ -49,6 +50,12 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         # Check if the episode has ended
         if np.any(self._state[:2] < 0) or np.any(self._state[:2] > 100):
             self._episode_ended = True
+
+        # Check for collisions with obstacles
+        for obstacle in self._obstacles:
+            if np.linalg.norm(self._state[:2] - obstacle) < 1.0:
+                self._episode_ended = True
+                return ts.termination(self._state, reward=-10.0)
 
         # Check if the goal is reached
         if np.linalg.norm(self._state[:2] - self._state[4:]) < 1.0:
