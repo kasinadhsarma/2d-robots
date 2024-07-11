@@ -10,6 +10,7 @@ from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.drivers import dynamic_step_driver
 from tf_agents.metrics import tf_metrics
 from tf_agents.eval import metric_utils
+from tf_agents.policies import policy_saver
 
 from environment import BirdRobotEnvironment
 from config import CONTROL_FREQUENCY, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP, NUM_ITERATIONS, COLLECT_STEPS_PER_ITERATION, LOG_INTERVAL, EVAL_INTERVAL, POLICY_DIR
@@ -87,6 +88,9 @@ collect_steps_per_iteration = COLLECT_STEPS_PER_ITERATION
 log_interval = LOG_INTERVAL
 eval_interval = EVAL_INTERVAL
 
+# Initialize the PolicySaver
+policy_saver = policy_saver.PolicySaver(agent.policy)
+
 # Training loop
 try:
     for _ in range(num_iterations):
@@ -123,7 +127,7 @@ try:
                 except Exception as e:
                     print(f"Error creating directory {policy_dir}: {e}")
             try:
-                tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+                policy_saver.save(policy_dir)
                 print(f"Policy saved successfully in {policy_dir} at step {step}")
             except Exception as e:
                 print(f"Error saving policy at step {step}: {e}")
@@ -135,7 +139,7 @@ try:
         os.makedirs(policy_dir)
 
     try:
-        tf.compat.v2.saved_model.save(agent.policy, policy_dir)
+        policy_saver.save(policy_dir)
         print(f"Policy saved successfully in {policy_dir}")
     except Exception as e:
         print(f"Error saving policy: {e}")
