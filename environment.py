@@ -25,7 +25,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         and sets up the initial state and obstacles.
         """
         self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.int32, minimum=0, maximum=5, name='action')
+            shape=(), dtype=np.int32, minimum=self.ACTION_ACCELERATE, maximum=self.ACTION_MOVE_BACKWARD, name='action')
         self._obstacles = [np.array([20, 20]), np.array([40, 40]), np.array([60, 60])]  # Example obstacles
         num_obstacles = len(self._obstacles)
         self._observation_spec = array_spec.BoundedArraySpec(
@@ -58,6 +58,22 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
     def _step(self, action):
         """
         Updates the environment state based on the action taken by the agent.
+
+        Args:
+            action (int): The action to be taken by the agent. Valid actions are defined by the ACTION_* constants.
+
+        Returns:
+            ts.TimeStep: A TimeStep object representing the new state of the environment. The TimeStep object contains:
+                - observation: The new state of the environment.
+                - reward: The reward received for taking the action.
+                - step_type: The type of the time step (FIRST, MID, or LAST).
+                - discount: The discount factor for future rewards.
+
+        Termination Conditions:
+            - The episode ends if the bird robot collides with an obstacle or goes out of bounds, resulting in a reward of REWARD_COLLISION.
+            - The episode ends if the bird robot reaches the goal, resulting in a reward of REWARD_GOAL.
+            - If the episode has ended, a termination TimeStep is returned with a reward of 0.0.
+            - Otherwise, a transition TimeStep is returned with a reward of REWARD_STEP and a discount factor of 0.9.
         """
         if self._episode_ended:
             return self.reset()
@@ -68,15 +84,18 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         elif action == self.ACTION_DECELERATE:
             self._state[3] -= ACCELERATION  # Decrease velocity
         elif action == self.ACTION_TURN_RIGHT:
-            self._state[2] += TURN_RATE  # Turn right
+            self._state[2] = (self._state[2] + TURN_RATE) % 360  # Turn right
         elif action == self.ACTION_TURN_LEFT:
-            self._state[2] -= TURN_RATE  # Turn left
+            self._state[2] = (self._state[2] - TURN_RATE) % 360  # Turn left
         elif action == self.ACTION_MOVE_FORWARD:
             self._state[0] += self._state[3] * np.cos(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move forward
             self._state[1] += self._state[3] * np.sin(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move forward
         elif action == self.ACTION_MOVE_BACKWARD:
             self._state[0] -= self._state[3] * np.cos(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move backward
             self._state[1] -= self._state[3] * np.sin(np.deg2rad(self._state[2])) * SIMULATION_TIME_STEP  # Move backward
+
+        # Ensure the orientation stays within 0 to 360 degrees
+        self._state[2] = self._state[2] % 360
 
         # Ensure the velocity does not exceed MAX_SPEED
         self._state[3] = np.clip(self._state[3], -MAX_SPEED, MAX_SPEED)
