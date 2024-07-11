@@ -14,8 +14,8 @@ This project aims to develop a 2D simulation of bird robots with reinforcement l
 ## Setup Instructions
 1. Clone the repository:
    ```bash
-   git clone https://github.com/VishwamAirobotics/2D-birds.git
-   cd 2D-birds
+   git clone https://github.com/VishwamAI/2d-robots.git
+   cd 2d-robots
    ```
 
 2. Create a virtual environment and activate it:

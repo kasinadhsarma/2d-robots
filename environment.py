@@ -10,6 +10,16 @@ from config import MAX_SPEED, ACCELERATION, TURN_RATE, SENSOR_RANGE, SENSOR_ANGL
 class BirdRobotEnvironment(py_environment.PyEnvironment):
     """
     Custom environment for a 2D bird robot navigating through obstacles towards a goal.
+
+    The environment supports discrete actions for controlling the bird robot's movement and orientation.
+    The state includes the robot's position, orientation, velocity, goal position, and information about obstacles.
+
+    Attributes:
+        _action_spec (array_spec.BoundedArraySpec): Specification of the action space.
+        _obstacles (List[np.ndarray]): List of obstacle positions.
+        _observation_spec (array_spec.BoundedArraySpec): Specification of the observation space.
+        _state (np.ndarray): Current state of the environment.
+        _episode_ended (bool): Flag indicating whether the episode has ended.
     """
 
     ACTION_ACCELERATE = 0
@@ -19,7 +29,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
     ACTION_MOVE_FORWARD = 4
     ACTION_MOVE_BACKWARD = 5
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes the BirdRobotEnvironment with action and observation specifications,
         and sets up the initial state and obstacles.
