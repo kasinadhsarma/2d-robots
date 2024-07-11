@@ -56,9 +56,7 @@ TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(
-        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
-    ),
+    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
@@ -66,11 +64,9 @@ HULL_FD = fixtureDef(
     restitution=0.0,
 )  # 0.99 bouncy
 
+
 class BipedalWalker(gym.Env):
-    metadata = {
-        'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second': FPS
-    }
+    metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": FPS}
 
     def __init__(self):
         self._seed()
@@ -221,12 +217,11 @@ class BipedalWalker(gym.Env):
         self.legs = []
         self.joints = []
 
-
         for i in range(2):
             leg = self.world.CreateDynamicBody(
                 position=(
                     VIEWPORT_W / SCALE / 2,
-                    VIEWPORT_H / SCALE / 2 - LEG_H / 2 - LEG_DOWN
+                    VIEWPORT_H / SCALE / 2 - LEG_H / 2 - LEG_DOWN,
                 ),
                 angle=(i * 0.05 - 0.05),
                 fixtures=LEG_FD,
@@ -256,9 +251,7 @@ class BipedalWalker(gym.Env):
     def step(self, action):
         self.hull.ApplyForceToCenter((0, -GRAVITY * self.hull.mass), True)
         for i in range(2):
-            self.joints[i].motorSpeed = float(
-                MOTORS_TORQUE * np.clip(action[i], -1, 1)
-            )
+            self.joints[i].motorSpeed = float(MOTORS_TORQUE * np.clip(action[i], -1, 1))
         self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
 
         pos = self.hull.position
@@ -302,14 +295,12 @@ class BipedalWalker(gym.Env):
 
         return np.array(state), reward, done, {}
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         from gym.envs.classic_control import rendering
 
         if self.viewer is None:
             self.viewer = rendering.Viewer(VIEWPORT_W, VIEWPORT_H)
-            self.viewer.set_bounds(
-                0, VIEWPORT_W / SCALE, 0, VIEWPORT_H / SCALE
-            )
+            self.viewer.set_bounds(0, VIEWPORT_W / SCALE, 0, VIEWPORT_H / SCALE)
 
         for obj in self.drawlist:
             for f in obj.fixtures:
@@ -326,25 +317,23 @@ class BipedalWalker(gym.Env):
                     path = [trans * v for v in f.shape.vertices]
                     self.viewer.draw_polygon(path, color=obj.color1)
                     path.append(path[0])
-                    self.viewer.draw_polyline(
-                        path, color=obj.color2, linewidth=2
-                    )
+                    self.viewer.draw_polyline(path, color=obj.color2, linewidth=2)
 
         flagy1 = TERRAIN_HEIGHT
         flagy2 = flagy1 + 50 / SCALE
         self.viewer.draw_polyline(
             [(self.terrain_x[-1], flagy1), (self.terrain_x[-1], flagy2)],
             color=(0, 0, 0),
-            linewidth=2
+            linewidth=2,
         )
         f = [
             (self.terrain_x[-1], flagy2),
             (self.terrain_x[-1], flagy2 - 10 / SCALE),
-            (self.terrain_x[-1] + 25 / SCALE, flagy2 - 5 / SCALE)
+            (self.terrain_x[-1] + 25 / SCALE, flagy2 - 5 / SCALE),
         ]
         self.viewer.draw_polygon(f, color=(0.9, 0.2, 0))
 
-        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+        return self.viewer.render(return_rgb_array=mode == "rgb_array")
 
     def close(self):
         if self.viewer:
@@ -354,6 +343,7 @@ class BipedalWalker(gym.Env):
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+
 
 LEG_FD = fixtureDef(
     shape=polygonShape(box=(LEG_W / 2, LEG_H / 2)),
@@ -804,18 +794,10 @@ class BipedalWalker(gym.Env, EzPickle):
         # )  # Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
-            self.joints[0].motorSpeed = float(
-                SPEED_HIP * np.clip(action[0], -1, 1)
-            )
-            self.joints[1].motorSpeed = float(
-                SPEED_KNEE * np.clip(action[1], -1, 1)
-            )
-            self.joints[2].motorSpeed = float(
-                SPEED_HIP * np.clip(action[2], -1, 1)
-            )
-            self.joints[3].motorSpeed = float(
-                SPEED_KNEE * np.clip(action[3], -1, 1)
-            )
+            self.joints[0].motorSpeed = float(SPEED_HIP * np.clip(action[0], -1, 1))
+            self.joints[1].motorSpeed = float(SPEED_KNEE * np.clip(action[1], -1, 1))
+            self.joints[2].motorSpeed = float(SPEED_HIP * np.clip(action[2], -1, 1))
+            self.joints[3].motorSpeed = float(SPEED_KNEE * np.clip(action[3], -1, 1))
         else:
             self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
