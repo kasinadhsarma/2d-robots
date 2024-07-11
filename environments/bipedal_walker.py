@@ -914,8 +914,8 @@ class BipedalWalkerV2(gym.Env, EzPickle):
         if self.render_mode is None:
             assert self.spec is not None
             gym.logger.warn(
-                "You are calling render method without specifying any render mo
-                "You can specify the render_mode at initialization, "
+                f"You are calling render method without specifying any render "
+                f"mode. You can specify the render_mode at initialization, "
                 f'gym.make("{self.spec.id}", render_mode="rgb_array")'
             )
             return
