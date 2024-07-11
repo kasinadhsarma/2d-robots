@@ -527,10 +527,18 @@ class BipedalWalker(gym.Env, EzPickle):
         # self.hull.ApplyForceToCenter((0, 20), True) -- Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
-            self.joints[0].motorSpeed = float(SPEED_HIP * np.clip(action[0], -1, 1))
-            self.joints[1].motorSpeed = float(SPEED_KNEE * np.clip(action[1], -1, 1))
-            self.joints[2].motorSpeed = float(SPEED_HIP * np.clip(action[2], -1, 1))
-            self.joints[3].motorSpeed = float(SPEED_KNEE * np.clip(action[3], -1, 1))
+            self.joints[0].motorSpeed = float(
+                SPEED_HIP * np.clip(action[0], -1, 1)
+            )
+            self.joints[1].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[1], -1, 1)
+            )
+            self.joints[2].motorSpeed = float(
+                SPEED_HIP * np.clip(action[2], -1, 1)
+            )
+            self.joints[3].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[3], -1, 1)
+            )
         else:
             self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
@@ -579,7 +587,7 @@ class BipedalWalker(gym.Env, EzPickle):
             self.joints[3].speed / SPEED_KNEE,
             1.0 if self.legs[3].ground_contact else 0.0,
         ]
-        state += [l.fraction for l in self.lidar]
+        state += [lidar_sensor.fraction for lidar_sensor in self.lidar]
         assert len(state) == 24
 
         self.scroll = pos.x - VIEWPORT_W / SCALE / 5
