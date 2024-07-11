@@ -56,7 +56,9 @@ TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
+    shape=polygonShape(
+        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
+    ),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
@@ -180,7 +182,9 @@ class BipedalWalker(gym.Env, EzPickle):
         "render_fps": FPS,
     }
 
-    def __init__(self, render_mode: Optional[str] = None, hardcore: bool = False):
+    def __init__(
+        self, render_mode: Optional[str] = None, hardcore: bool = False
+    ):
         EzPickle.__init__(self, render_mode, hardcore)
         self.isopen = True
 
@@ -369,7 +373,9 @@ class BipedalWalker(gym.Env, EzPickle):
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.integers(TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.integers(
+                    TERRAIN_GRASS / 2, TERRAIN_GRASS
+                )
                 if state == GRASS and hardcore:
                     state = self.np_random.integers(1, _STATES_)
                     oneshot = True
@@ -568,7 +574,9 @@ class BipedalWalker(gym.Env, EzPickle):
                 pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
                 pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
             )
-            self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+            self.world.RayCast(
+                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2
+            )
 
         state = [
             self.hull.angle,
