@@ -117,7 +117,11 @@ try:
             policy_dir = POLICY_DIR
             print(f"Attempting to save policy at step {step} in directory {policy_dir}")
             if not os.path.exists(policy_dir):
-                os.makedirs(policy_dir)
+                try:
+                    os.makedirs(policy_dir)
+                    print(f"Directory {policy_dir} created successfully.")
+                except Exception as e:
+                    print(f"Error creating directory {policy_dir}: {e}")
             try:
                 tf.compat.v2.saved_model.save(agent.policy, policy_dir)
                 print(f"Policy saved successfully in {policy_dir} at step {step}")
