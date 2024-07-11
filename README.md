@@ -33,12 +33,13 @@ This project aims to develop a 2D simulation of bird robots with reinforcement l
    ```bash
    python3 train_agent.py
    ```
-   **Note:** The training process can take a significant amount of time. Please ensure that the process completes before proceeding to the next step.
+   **Note:** The training process can take a significant amount of time. Please ensure that the process completes before proceeding to the next step. During training, progress will be reported with loss values at regular intervals. The training is complete when the final model is saved in the `policy` directory.
 
 5. Test the trained reinforcement learning agent:
    ```bash
    python3 test_agent.py
    ```
+   **Note:** The `test_agent.py` script will run multiple episodes to evaluate the performance of the trained agent. The output will include the results of these episodes, providing insights into the agent's behavior and performance.
 
 ## Error Handling
 ### Policy Directory Not Found
@@ -48,7 +49,13 @@ If you encounter a `FileNotFoundError` indicating that the policy directory does
 If you encounter TensorFlow-specific errors, ensure that TensorFlow and TF-Agents are installed correctly in your virtual environment. Refer to the `requirements.txt` file for the required versions and install them using `pip install -r requirements.txt`.
 
 ## Contributing
-Contributions are welcome! Please fork the repository and create a pull request with your changes. Ensure that your code follows the project's coding standards and includes appropriate tests.
+Contributions are welcome! Please fork the repository and create a pull request with your changes. Ensure that your code follows the project's coding standards and includes appropriate tests. When submitting a pull request, provide a clear description of the changes and the motivation behind them.
 
 ## License
 This project is licensed under the Apache License, Version 2.0. See the LICENSE file for more details.
+
+## Contact
+For support or to report issues, please open an issue on the GitHub repository or contact the project maintainers at [email@example.com].
+
+## Acknowledgments
+We would like to thank the contributors and the open-source community for their valuable resources and support in making this project possible.
