@@ -6,21 +6,29 @@ from tf_agents.trajectories import time_step as ts
 from src.environment import BirdRobotEnvironment
 from config.config import POLICY_DIR
 
-def load_policy(policy_dir):
+def load_policy(policy_dir, time_step_spec, action_spec):
     """
     Load the trained policy from the specified directory.
 
     Args:
         policy_dir (str): The directory where the policy is saved.
+        time_step_spec: The time step specification.
+        action_spec: The action specification.
 
     Returns:
         tf_policy: The loaded policy.
     """
     try:
-        policy = SavedModelPyTFEagerPolicy(policy_dir)
+        policy = SavedModelPyTFEagerPolicy(policy_dir, time_step_spec=time_step_spec, action_spec=action_spec)
+        print(f"Policy loaded successfully from {policy_dir}")
+        print(f"Loaded policy object: {policy}")
+        print(f"Policy methods: {dir(policy)}")
         return policy
     except Exception as e:
         print(f"Error loading policy: {e}")
+        print(f"Policy directory: {policy_dir}")
+        print(f"Time step spec: {time_step_spec}")
+        print(f"Action spec: {action_spec}")
         return None
 
 def evaluate_policy(policy, environment, num_episodes=10):
@@ -47,15 +55,15 @@ def evaluate_policy(policy, environment, num_episodes=10):
     return total_rewards
 
 def main():
-    # Load the trained policy
-    policy = load_policy(POLICY_DIR)
-    if policy is None:
-        print("Failed to load policy. Exiting.")
-        return
-
     # Create the environment
     env = BirdRobotEnvironment()
     tf_env = tf_py_environment.TFPyEnvironment(env)
+
+    # Load the trained policy
+    policy = load_policy(POLICY_DIR, tf_env.time_step_spec(), tf_env.action_spec())
+    if policy is None:
+        print("Failed to load policy. Exiting.")
+        return
 
     # Evaluate the policy
     rewards = evaluate_policy(policy, tf_env)
