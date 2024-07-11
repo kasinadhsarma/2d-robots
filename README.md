@@ -37,6 +37,21 @@ This project aims to create a 2D walking model for robotics using reinforcement 
    python agents/evaluate_agent.py
    ```
 
+## Running Tests
+
+To run the tests locally, use the following command:
+```bash
+pytest
+```
+
+## Continuous Integration
+
+This project uses GitHub Actions for Continuous Integration (CI). The CI workflow is defined in the `.github/workflows/ci.yml` file. It includes the following steps:
+- Set up Python environment
+- Install dependencies
+- Lint the code with flake8
+- Run tests with pytest
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and create a pull request with your changes.
