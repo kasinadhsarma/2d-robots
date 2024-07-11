@@ -5,9 +5,13 @@ from tf_agents.trajectories import time_step as ts
 import numpy as np
 from environment import BirdRobotEnvironment
 from config import POLICY_DIR
+import os
 
 # Load the trained policy
 policy_dir = POLICY_DIR
+if not os.path.exists(policy_dir):
+    raise FileNotFoundError(f"Policy directory '{policy_dir}' does not exist. Please ensure the model is trained and saved correctly.")
+
 saved_policy = tf.compat.v2.saved_model.load(policy_dir)
 
 # Create the environment

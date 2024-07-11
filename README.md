@@ -39,6 +39,13 @@ This project aims to develop a 2D simulation of bird robots with reinforcement l
    python3 test_agent.py
    ```
 
+## Error Handling
+### Policy Directory Not Found
+If you encounter a `FileNotFoundError` indicating that the policy directory does not exist, ensure that the model has been trained and saved correctly. The `train_agent.py` script should create the `policy` directory and save the trained model. If the directory is missing, rerun the `train_agent.py` script to train and save the model.
+
+### TensorFlow Errors
+If you encounter TensorFlow-specific errors, ensure that TensorFlow and TF-Agents are installed correctly in your virtual environment. Refer to the `requirements.txt` file for the required versions and install them using `pip install -r requirements.txt`.
+
 ## Contributing
 Contributions are welcome! Please fork the repository and create a pull request with your changes. Ensure that your code follows the project's coding standards and includes appropriate tests.
 
