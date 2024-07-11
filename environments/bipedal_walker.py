@@ -321,8 +321,11 @@ class BipedalWalker(gym.Env):
                         f.shape.radius, 30, color=obj.color1
                     ).add_attr(t)
                     self.viewer.draw_circle(
-                        f.shape.radius, 30, color=obj.color2, filled=False,
-                        linewidth=2
+                        f.shape.radius,
+                        30,
+                        color=obj.color2,
+                        filled=False,
+                        linewidth=2,
                     ).add_attr(t)
                 else:
                     path = [trans * v for v in f.shape.vertices]
@@ -823,27 +826,19 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 SPEED_KNEE * np.clip(action[3], -1, 1)
             )
         else:
-            self.joints[0].motorSpeed = float(
-                SPEED_HIP * np.sign(action[0])
-            )
+            self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[0]), 0, 1)
             )
-            self.joints[1].motorSpeed = float(
-                SPEED_KNEE * np.sign(action[1])
-            )
+            self.joints[1].motorSpeed = float(SPEED_KNEE * np.sign(action[1]))
             self.joints[1].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[1]), 0, 1)
             )
-            self.joints[2].motorSpeed = float(
-                SPEED_HIP * np.sign(action[2])
-            )
+            self.joints[2].motorSpeed = float(SPEED_HIP * np.sign(action[2]))
             self.joints[2].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[2]), 0, 1)
             )
-            self.joints[3].motorSpeed = float(
-                SPEED_KNEE * np.sign(action[3])
-            )
+            self.joints[3].motorSpeed = float(SPEED_KNEE * np.sign(action[3]))
             self.joints[3].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[3]), 0, 1)
             )
@@ -962,9 +957,7 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 for p in poly
             ]
             pygame.draw.polygon(
-                self.surf,
-                color=(255, 255, 255),
-                points=points
+                self.surf, color=(255, 255, 255), points=points
             )
             gfxdraw.aapolygon(self.surf, points, (255, 255, 255))
         for poly, color in self.terrain_poly:
@@ -990,10 +983,12 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                     self.surf,
                     color=(255, 0, 0),
                     start_pos=(
-                        single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE
+                        single_lidar.p1[0] * SCALE,
+                        single_lidar.p1[1] * SCALE,
                     ),
                     end_pos=(
-                        single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE
+                        single_lidar.p2[0] * SCALE,
+                        single_lidar.p2[1] * SCALE,
                     ),
                     width=1,
                 )
@@ -1079,10 +1074,10 @@ class BipedalWalkerHardcore:
     def __init__(self):
         raise error.Error(
             "Error initializing BipedalWalkerHardcore Environment.\n"
-            "Currently, we do not support initializing this mode of environment "
-            "by calling the class directly.\n"
-            "To use this environment, instead create it by specifying the hardcore "
-            "keyword in gym.make, i.e.\n"
+            "Currently, we do not support initializing this mode of "
+            "environment by calling the class directly.\n"
+            "To use this environment, instead create it by specifying the "
+            "hardcore keyword in gym.make, i.e.\n"
             'gym.make("BipedalWalker-v3", hardcore=True)'
         )
 
