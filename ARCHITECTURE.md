@@ -5,20 +5,25 @@ This document outlines the basic architecture for the 2D bird robots project. Th
 
 ## Modules
 
-### 1. Movement
-The movement module is responsible for controlling the movement of the bird robots. This includes algorithms for pathfinding, obstacle avoidance, and other movement-related functionalities.
+### 1. Environment
+The environment module defines the reinforcement learning environment for the bird robots. This includes the state representation, action space, reward structure, and environment dynamics.
 
-**File:** `movement.py`
+**File:** `environment.py`
 
-### 2. Control
-The control module handles the overall control logic for the bird robots. This includes state management, decision-making processes, and coordination between different modules.
+### 2. Training
+The training module handles the training process for the reinforcement learning agent. This includes setting up the training loop, defining the agent, and saving the trained policy.
 
-**File:** `control.py`
+**File:** `train_agent.py`
 
-### 3. Sensors
-The sensors module is responsible for integrating and processing data from various sensors. This includes data acquisition, filtering, and interpretation to provide meaningful information to other modules.
+### 3. Testing
+The testing module is responsible for evaluating the performance of the trained reinforcement learning agent. This includes running multiple episodes and reporting the results.
 
-**File:** `sensors.py`
+**File:** `test_agent.py`
+
+### 4. Configuration
+The configuration module defines various parameters and constants used throughout the project. This includes environment settings, training parameters, and directory paths.
+
+**File:** `config.py`
 
 ## Future Extensions
 The architecture is designed to be flexible and can be extended with additional modules as needed. Potential future extensions include:
