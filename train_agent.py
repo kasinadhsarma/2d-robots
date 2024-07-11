@@ -100,8 +100,8 @@ for _ in range(num_iterations):
 
     if step % eval_interval == 0:
         avg_return = metric_utils.compute_summaries(
-            eval_env,
-            agent.policy,
-            num_episodes=10,
-            metrics=train_metrics)
+            metrics=train_metrics,
+            environment=eval_env,
+            policy=agent.policy,
+            num_episodes=10)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
