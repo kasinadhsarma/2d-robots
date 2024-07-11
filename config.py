@@ -21,6 +21,10 @@ COLLISION_DISTANCE = 1.0  # Distance threshold for collision detection
 # Boundary parameters
 BOUNDARY_MIN = 0  # Minimum boundary value for the environment
 BOUNDARY_MAX = 200  # Maximum boundary value for the environment
+BOUNDARY_OFFSET = 10  # Offset from boundaries for initial and goal positions
+
+# Initial state parameters
+INITIAL_ORIENTATION = 0.0  # Initial orientation of the bird robots
 
 # Reward parameters
 REWARD_COLLISION = -10.0  # Reward for collision

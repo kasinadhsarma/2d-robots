@@ -5,7 +5,7 @@ from tf_agents.environments import tf_py_environment
 from tf_agents.specs import array_spec
 from tf_agents.trajectories import time_step as ts
 import numpy as np
-from config import MAX_SPEED, ACCELERATION, TURN_RATE, SENSOR_RANGE, SENSOR_ANGLE, CONTROL_FREQUENCY, SIMULATION_TIME_STEP, COLLISION_DISTANCE, BOUNDARY_MIN, BOUNDARY_MAX, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP
+from config import MAX_SPEED, ACCELERATION, TURN_RATE, SENSOR_RANGE, SENSOR_ANGLE, CONTROL_FREQUENCY, SIMULATION_TIME_STEP, COLLISION_DISTANCE, BOUNDARY_MIN, BOUNDARY_MAX, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP, BOUNDARY_OFFSET, INITIAL_ORIENTATION
 
 class BirdRobotEnvironment(py_environment.PyEnvironment):
     def __init__(self):
@@ -14,7 +14,7 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         self._obstacles = [np.array([20, 20]), np.array([40, 40]), np.array([60, 60])]  # Example obstacles
         num_obstacles = len(self._obstacles)
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(6 + num_obstacles * 3,), dtype=np.float32, minimum=0, maximum=200, name='observation')
+            shape=(6 + num_obstacles * 3,), dtype=np.float32, minimum=BOUNDARY_MIN, maximum=BOUNDARY_MAX, name='observation')
         self._state = np.zeros(6 + num_obstacles * 3, dtype=np.float32)  # x, y, orientation, velocity, goal_x, goal_y, obstacle_x1, obstacle_y1, distance1, ...
         self._episode_ended = False
 
@@ -27,7 +27,13 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
     def _reset(self):
         num_obstacles = len(self._obstacles)
         self._state = np.zeros(6 + num_obstacles * 3, dtype=np.float32)  # Reset to initial position and goal
-        self._state[4:6] = [50, 50]  # Set goal position
+        self._state[:2] = [BOUNDARY_MIN + BOUNDARY_OFFSET, BOUNDARY_MIN + BOUNDARY_OFFSET]  # Set initial position
+        self._state[2] = INITIAL_ORIENTATION  # Set initial orientation
+        self._state[3] = 0.0  # Set initial velocity
+        self._state[4:6] = [BOUNDARY_MAX - BOUNDARY_OFFSET, BOUNDARY_MAX - BOUNDARY_OFFSET]  # Set goal position
+        for i, obstacle in enumerate(self._obstacles):
+            self._state[6 + i * 3:8 + i * 3] = obstacle  # Set obstacle positions
+            self._state[8 + i * 3] = SENSOR_RANGE  # Initialize obstacle distances to SENSOR_RANGE
         self._episode_ended = False
         return ts.restart(self._get_observation())
 
@@ -66,8 +72,9 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
                 self._state[8 + i * 3] = SENSOR_RANGE
 
         # Check if the episode has ended
-        if np.any(self._state[:2] < BOUNDARY_MIN) or np.any(self._state[:2] > BOUNDARY_MAX):
+        if np.any(self._state[:2] < BOUNDARY_MIN + BOUNDARY_OFFSET) or np.any(self._state[:2] > BOUNDARY_MAX - BOUNDARY_OFFSET):
             self._episode_ended = True
+            return ts.termination(self._get_observation(), reward=REWARD_COLLISION)
 
         # Check for collisions with obstacles
         for obstacle in self._obstacles:
