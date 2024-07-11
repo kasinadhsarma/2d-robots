@@ -13,6 +13,7 @@ from tf_agents.eval import metric_utils
 
 from environment import BirdRobotEnvironment
 from config import CONTROL_FREQUENCY, REWARD_COLLISION, REWARD_GOAL, REWARD_STEP
+import os
 
 # Set up the environment
 train_py_env = BirdRobotEnvironment()
@@ -105,3 +106,11 @@ for _ in range(num_iterations):
             policy=agent.policy,
             num_episodes=10)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
+
+# Create the policy directory if it doesn't exist
+policy_dir = 'policy'
+if not os.path.exists(policy_dir):
+    os.makedirs(policy_dir)
+
+# Save the trained policy
+tf.compat.v2.saved_model.save(agent.policy, policy_dir)
