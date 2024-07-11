@@ -30,7 +30,8 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         num_obstacles = len(self._obstacles)
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(6 + num_obstacles * 3,), dtype=np.float32, minimum=BOUNDARY_MIN, maximum=BOUNDARY_MAX, name='observation')
-        self._state = np.zeros(6 + num_obstacles * 3, dtype=np.float32)  # x, y, orientation, velocity, goal_x, goal_y, obstacle_x1, obstacle_y1, distance1, ...
+        # State array structure: [x, y, orientation, velocity, goal_x, goal_y, obstacle_x1, obstacle_y1, distance1, ...]
+        self._state = np.zeros(6 + num_obstacles * 3, dtype=np.float32)  # Initialize state array
         self._episode_ended = False
 
     def action_spec(self):
@@ -45,12 +46,12 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
         """
         num_obstacles = len(self._obstacles)
         self._state = np.zeros(6 + num_obstacles * 3, dtype=np.float32)  # Reset to initial position and goal
-        self._state[:2] = [BOUNDARY_MIN + BOUNDARY_OFFSET, BOUNDARY_MIN + BOUNDARY_OFFSET]  # Set initial position
+        self._state[:2] = [BOUNDARY_MIN + BOUNDARY_OFFSET, BOUNDARY_MIN + BOUNDARY_OFFSET]  # Set initial position (x, y)
         self._state[2] = INITIAL_ORIENTATION  # Set initial orientation
         self._state[3] = 0.0  # Set initial velocity
-        self._state[4:6] = [BOUNDARY_MAX - BOUNDARY_OFFSET, BOUNDARY_MAX - BOUNDARY_OFFSET]  # Set goal position
+        self._state[4:6] = [BOUNDARY_MAX - BOUNDARY_OFFSET, BOUNDARY_MAX - BOUNDARY_OFFSET]  # Set goal position (goal_x, goal_y)
         for i, obstacle in enumerate(self._obstacles):
-            self._state[6 + i * 3:8 + i * 3] = obstacle  # Set obstacle positions
+            self._state[6 + i * 3:8 + i * 3] = obstacle  # Set obstacle positions (obstacle_x, obstacle_y)
             self._state[8 + i * 3] = SENSOR_RANGE  # Initialize obstacle distances to SENSOR_RANGE
         self._episode_ended = False
         return ts.restart(self._get_observation())
@@ -133,6 +134,9 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
             return ts.transition(self._get_observation(), reward=REWARD_STEP, discount=0.9)
 
     def _get_observation(self):
+        """
+        Returns the current state of the environment.
+        """
         return self._state
 
 # Create the environment
