@@ -354,6 +354,7 @@ class BipedalWalker(gym.Env):
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+
 LEG_FD = fixtureDef(
     shape=polygonShape(box=(LEG_W / 2, LEG_H / 2)),
     density=1.0,
