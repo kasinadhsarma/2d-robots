@@ -4,10 +4,15 @@
 This project aims to develop a 2D simulation of bird robots with reinforcement learning capabilities. The simulation includes various functionalities such as movement, control, sensor integration, and a digital room environment for practice. The architecture is designed to be modular and extensible, allowing for easy integration of new features and functionalities.
 
 ## Project Structure
-- `environment.py`: Defines the reinforcement learning environment for the bird robots.
+- `src/`
+  - `environment.py`: Defines the reinforcement learning environment for the bird robots.
+  - `control.py`: Implements the control system to manage the bird robot's movement and orientation.
+  - `movement.py`: Develops the movement system to update the bird robot's position based on control commands.
+  - `sensors.py`: Creates the sensor system to detect obstacles and provide the robot's state.
 - `train_agent.py`: Script for training the reinforcement learning agent.
 - `test_agent.py`: Script for testing the trained reinforcement learning agent.
-- `config.py`: Defines configuration parameters for the project.
+- `config/`
+  - `config.py`: Defines configuration parameters for the project.
 - `requirements.txt`: Lists the project dependencies.
 - `ARCHITECTURE.md`: Provides an overview of the project architecture.
 
@@ -52,10 +57,13 @@ If you encounter TensorFlow-specific errors, ensure that TensorFlow and TF-Agent
 Contributions are welcome! Please fork the repository and create a pull request with your changes. Ensure that your code follows the project's coding standards and includes appropriate tests. When submitting a pull request, provide a clear description of the changes and the motivation behind them.
 
 ## Contact
-For support or to report issues, please open an issue on the GitHub repository or contact the project maintainers at vishwa@airobotics.com.
+For support or to report issues, please open an issue on the GitHub repository or contact the project maintainers.
 
 ## License
 This project is licensed under the Apache License, Version 2.0. See the LICENSE file for more details.
 
 ## Acknowledgments
 We would like to thank the contributors and the open-source community for their valuable resources and support in making this project possible. Special thanks to the Vishwam Airobotics team for their dedication and hard work.
+
+## Devin Run
+This project was developed with the assistance of [Devin](https://preview.devin.ai/devin/55c5ca45dd624ecca086fe995ce1368b).
