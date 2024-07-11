@@ -56,7 +56,9 @@ TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
+    shape=polygonShape(
+        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
+    ),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
@@ -173,7 +175,10 @@ class BipedalWalker(gym.Env, EzPickle):
     """
 
     metadata = {
-        "render_modes": ["human", "rgb_array"],
+        "render_modes": [
+            "human",
+            "rgb_array"
+        ],
         "render_fps": FPS,
     }
 
@@ -513,10 +518,18 @@ class BipedalWalker(gym.Env, EzPickle):
         # )  # Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
-            self.joints[0].motorSpeed = float(SPEED_HIP * np.clip(action[0], -1, 1))
-            self.joints[1].motorSpeed = float(SPEED_KNEE * np.clip(action[1], -1, 1))
-            self.joints[2].motorSpeed = float(SPEED_HIP * np.clip(action[2], -1, 1))
-            self.joints[3].motorSpeed = float(SPEED_KNEE * np.clip(action[3], -1, 1))
+            self.joints[0].motorSpeed = float(
+                SPEED_HIP * np.clip(action[0], -1, 1)
+            )
+            self.joints[1].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[1], -1, 1)
+            )
+            self.joints[2].motorSpeed = float(
+                SPEED_HIP * np.clip(action[2], -1, 1)
+            )
+            self.joints[3].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[3], -1, 1)
+            )
         else:
             self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
@@ -535,7 +548,9 @@ class BipedalWalker(gym.Env, EzPickle):
                 MOTORS_TORQUE * np.clip(np.abs(action[3]), 0, 1)
             )
 
-        self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
+        self.world.Step(
+            1.0 / FPS, 6 * 30, 2 * 30
+        )
 
         pos = self.hull.position
         vel = self.hull.linearVelocity
