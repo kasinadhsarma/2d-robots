@@ -470,7 +470,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
         "render_fps": FPS,
     }
 
-    def __init__(self, render_mode: Optional[str] = None, hardcore: bool = False):
+    def __init__(
+        self, render_mode: Optional[str] = None, hardcore: bool = False
+    ):
         EzPickle.__init__(self, render_mode, hardcore)
         self.isopen = True
 
@@ -987,8 +989,12 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 pygame.draw.line(
                     self.surf,
                     color=(255, 0, 0),
-                    start_pos=(single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE),
-                    end_pos=(single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE),
+                    start_pos=(
+                        single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE
+                    ),
+                    end_pos=(
+                        single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE
+                    ),
                     width=1,
                 )
 
@@ -1011,7 +1017,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 else:
                     path = [trans * v * SCALE for v in f.shape.vertices]
                     if len(path) > 2:
-                        pygame.draw.polygon(self.surf, color=obj.color1, points=path)
+                        pygame.draw.polygon(
+                            self.surf, color=obj.color1, points=path
+                        )
                         gfxdraw.aapolygon(self.surf, path, obj.color1)
                         path.append(path[0])
                         pygame.draw.polygon(
@@ -1030,7 +1038,10 @@ class BipedalWalkerV2(gym.Env, EzPickle):
         flagy2 = flagy1 + 50
         x = TERRAIN_STEP * 3 * SCALE
         pygame.draw.aaline(
-            self.surf, color=(0, 0, 0), start_pos=(x, flagy1), end_pos=(x, flagy2)
+            self.surf,
+            color=(0, 0, 0),
+            start_pos=(x, flagy1),
+            end_pos=(x, flagy2),
         )
         f = [
             (x, flagy2),
