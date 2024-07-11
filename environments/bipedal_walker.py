@@ -662,12 +662,16 @@ class BipedalWalker(gym.Env, EzPickle):
                 self.surf,
                 color=(255, 255, 255),
                 points=[
-                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
+                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                    for p in poly
                 ],
             )
             gfxdraw.aapolygon(
                 self.surf,
-                [(p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly],
+                [
+                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                    for p in poly
+                ],
                 (255, 255, 255),
             )
         for poly, color in self.terrain_poly:
