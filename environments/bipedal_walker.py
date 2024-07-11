@@ -565,8 +565,8 @@ class BipedalWalker(gym.Env, EzPickle):
 
     self.scroll = pos.x - VIEWPORT_W / SCALE / 5
 
-    shaping = 100 * pos[0] / SCALE  # Adjusted reward shaping for digital walking
-    shaping -= 10.0 * abs(state[0])  # Increased penalty for head tilt
+    shaping = 200 * pos[0] / SCALE  # Adjusted reward shaping for digital walking
+    shaping -= 20.0 * abs(state[0])  # Increased penalty for head tilt
 
     reward = 0
     if self.prev_shaping is not None:
@@ -574,7 +574,7 @@ class BipedalWalker(gym.Env, EzPickle):
     self.prev_shaping = shaping
 
     for a in action:
-        reward -= 0.0005 * MOTORS_TORQUE * np.clip(np.abs(a), 0, 1)  # Adjusted motor penalty
+        reward -= 0.001 * MOTORS_TORQUE * np.clip(np.abs(a), 0, 1)  # Adjusted motor penalty
 
     terminated = False
     if self.game_over or pos[0] < 0:
