@@ -104,7 +104,9 @@ for _ in range(num_iterations):
             metrics=train_metrics,
             environment=eval_env,
             policy=agent.policy,
-            num_episodes=10)
+            num_episodes=10,
+            tf_summaries=False,
+            log=True)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
 
 # Create the policy directory if it doesn't exist
