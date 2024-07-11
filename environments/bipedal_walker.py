@@ -593,7 +593,7 @@ class BipedalWalker(gym.Env, EzPickle):
             gym.logger.warn(
                 "You are calling render method without specifying any render mode. "
                 "You can specify the render_mode at initialization, "
-                f'e.g. gym.make("{self.spec.id}", render_mode="rgb_array")'
+                f'gym.make("{self.spec.id}", render_mode="rgb_array")'
             )
             return
 
@@ -638,12 +638,16 @@ class BipedalWalker(gym.Env, EzPickle):
                 self.surf,
                 color=(255, 255, 255),
                 points=[
-                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
+                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                    for p in poly
                 ],
             )
             gfxdraw.aapolygon(
                 self.surf,
-                [(p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly],
+                [
+                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                    for p in poly
+                ],
                 (255, 255, 255),
             )
         for poly, color in self.terrain_poly:
@@ -669,8 +673,14 @@ class BipedalWalker(gym.Env, EzPickle):
                 pygame.draw.line(
                     self.surf,
                     color=(255, 0, 0),
-                    start_pos=(single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE),
-                    end_pos=(single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE),
+                    start_pos=(
+                        single_lidar.p1[0] * SCALE,
+                        single_lidar.p1[1] * SCALE
+                    ),
+                    end_pos=(
+                        single_lidar.p2[0] * SCALE,
+                        single_lidar.p2[1] * SCALE
+                    ),
                     width=1,
                 )
 
