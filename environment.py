@@ -9,7 +9,7 @@ import numpy as np
 class BirdRobotEnvironment(py_environment.PyEnvironment):
     def __init__(self):
         self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.int32, minimum=0, maximum=3, name='action')
+            shape=(), dtype=np.int32, minimum=0, maximum=5, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(4,), dtype=np.float32, minimum=0, maximum=100, name='observation')
         self._state = np.array([0, 0, 0, 0], dtype=np.float32)
@@ -39,6 +39,10 @@ class BirdRobotEnvironment(py_environment.PyEnvironment):
             self._state[1] += 1  # Move up
         elif action == 3:
             self._state[1] -= 1  # Move down
+        elif action == 4:
+            self._state[2] += 1  # Turn right
+        elif action == 5:
+            self._state[2] -= 1  # Turn left
 
         # Check if the episode has ended
         if np.any(self._state < 0) or np.any(self._state > 100):
