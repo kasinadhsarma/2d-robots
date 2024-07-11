@@ -323,7 +323,8 @@ class BipedalWalker(gym.Env):
                         f.shape.radius, 30, color=obj.color1
                     ).add_attr(t)
                     self.viewer.draw_circle(
-                        f.shape.radius, 30, color=obj.color2, filled=False, linewidth=2
+                        f.shape.radius, 30, color=obj.color2, filled=False,
+                        linewidth=2
                     ).add_attr(t)
                 else:
                     path = [trans * v for v in f.shape.vertices]
@@ -395,8 +396,6 @@ class ContactDetector(contactListener):
         for leg in [self.env.legs[1], self.env.legs[3]]:
             if leg in [contact.fixtureA.body, contact.fixtureB.body]:
                 leg.ground_contact = False
-
-
 
 
 class BipedalWalkerV2(gym.Env, EzPickle):
