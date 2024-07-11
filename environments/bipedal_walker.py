@@ -153,7 +153,8 @@ class BipedalWalker(gym.Env, EzPickle):
         "BipedalWalker-v3", hardcore=True, render_mode="rgb_array"
     )
     >>> env
-    <TimeLimit<OrderEnforcing<PassiveEnvChecker<BipedalWalker<BipedalWalker-v3>>>>>
+    <TimeLimit<OrderEnforcing<PassiveEnvChecker<BipedalWalker<
+    BipedalWalker-v3>>>>>
 
     ```
 
