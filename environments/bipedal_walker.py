@@ -1010,7 +1010,9 @@ class BipedalWalkerV2(gym.Env, EzPickle):
                 else:
                     path = [trans * v * SCALE for v in f.shape.vertices]
                     if len(path) > 2:
-                        pygame.draw.polygon(self.surf, color=obj.color1, points=path)
+                        pygame.draw.polygon(
+                            self.surf, color=obj.color1, points=path
+                        )
                         gfxdraw.aapolygon(self.surf, path, obj.color1)
                         path.append(path[0])
                         pygame.draw.polygon(
