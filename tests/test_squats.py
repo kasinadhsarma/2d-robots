@@ -1,6 +1,7 @@
 import unittest
 from behaviors.squats import SquatEnv
 
+
 class TestSquatEnv(unittest.TestCase):
     def setUp(self):
         self.env = SquatEnv()
@@ -17,6 +18,7 @@ class TestSquatEnv(unittest.TestCase):
         self.assertEqual(len(state), 3)
         self.assertIsInstance(reward, float)
         self.assertIsInstance(done, bool)
+
 
 if __name__ == '__main__':
     unittest.main()
