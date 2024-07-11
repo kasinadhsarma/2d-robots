@@ -8,14 +8,14 @@ class TestSquatEnv(unittest.TestCase):
 
     def test_initial_state(self):
         state = self.env.reset()
-        self.assertEqual(len(state), 3)
+        self.assertEqual(len(state), 4)
         self.assertTrue(all(isinstance(x, float) for x in state))
 
     def test_step_function(self):
         self.env.reset()
-        action = [0.5]
+        action = [0.5, 0.5]
         state, reward, done, _ = self.env.step(action)
-        self.assertEqual(len(state), 3)
+        self.assertEqual(len(state), 4)
         self.assertIsInstance(reward, float)
         self.assertIsInstance(done, bool)
 
