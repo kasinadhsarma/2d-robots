@@ -56,9 +56,7 @@ TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
 HULL_FD = fixtureDef(
-    shape=polygonShape(
-        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
-    ),
+    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
@@ -531,19 +529,27 @@ class BipedalWalker(gym.Env, EzPickle):
                 SPEED_KNEE * np.clip(action[3], -1, 1)
             )
         else:
-            self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
+            self.joints[0].motorSpeed = float(
+                SPEED_HIP * np.sign(action[0])
+            )
             self.joints[0].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[0]), 0, 1)
             )
-            self.joints[1].motorSpeed = float(SPEED_KNEE * np.sign(action[1]))
+            self.joints[1].motorSpeed = float(
+                SPEED_KNEE * np.sign(action[1])
+            )
             self.joints[1].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[1]), 0, 1)
             )
-            self.joints[2].motorSpeed = float(SPEED_HIP * np.sign(action[2]))
+            self.joints[2].motorSpeed = float(
+                SPEED_HIP * np.sign(action[2])
+            )
             self.joints[2].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[2]), 0, 1)
             )
-            self.joints[3].motorSpeed = float(SPEED_KNEE * np.sign(action[3]))
+            self.joints[3].motorSpeed = float(
+                SPEED_KNEE * np.sign(action[3])
+            )
             self.joints[3].maxMotorTorque = float(
                 MOTORS_TORQUE * np.clip(np.abs(action[3]), 0, 1)
             )
@@ -677,8 +683,16 @@ class BipedalWalker(gym.Env, EzPickle):
             scaled_poly = []
             for coord in poly:
                 scaled_poly.append([coord[0] * SCALE, coord[1] * SCALE])
-            pygame.draw.polygon(self.surf, color=color, points=scaled_poly)
-            gfxdraw.aapolygon(self.surf, scaled_poly, color)
+            pygame.draw.polygon(
+                self.surf,
+                color=color,
+                points=scaled_poly
+            )
+            gfxdraw.aapolygon(
+                self.surf,
+                scaled_poly,
+                color
+            )
 
         self.lidar_render = (self.lidar_render + 1) % 100
         i = self.lidar_render
