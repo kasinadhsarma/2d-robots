@@ -32,7 +32,7 @@ REWARD_GOAL = 10.0  # Reward for reaching the goal
 REWARD_STEP = 1.0  # Reward for each step taken
 
 # Training parameters
-NUM_ITERATIONS = 20000  # Total number of training iterations
+NUM_ITERATIONS = 5000  # Total number of training iterations
 COLLECT_STEPS_PER_ITERATION = 1  # Number of steps to collect per iteration
 LOG_INTERVAL = 200  # Interval for logging training progress
 EVAL_INTERVAL = 1000  # Interval for evaluating the agent's performance
