@@ -1,7 +1,7 @@
-# 2D Bird Robots Project
+# 2D Robots Project
 
 ## Introduction
-This project aims to develop a 2D simulation of bird robots with reinforcement learning capabilities. The simulation includes various functionalities such as movement, control, sensor integration, and a digital room environment for practice. The architecture is designed to be modular and extensible, allowing for easy integration of new features and functionalities.
+This project aims to develop a 2D simulation of robots with reinforcement learning capabilities. The simulation includes various functionalities such as movement, control, sensor integration, and a digital room environment for practice. The architecture is designed to be modular and extensible, allowing for easy integration of new features and functionalities.
 
 ## Project Structure
 - `src/`
