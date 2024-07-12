@@ -70,5 +70,6 @@ def main():
     print(f"Total rewards for each episode: {rewards}")
     print(f"Average reward: {np.mean(rewards)}")
 
+
 if __name__ == "__main__":
     main()
