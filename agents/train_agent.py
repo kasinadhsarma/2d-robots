@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tf_agents
 from tf_agents.environments import suite_gym
 from tf_agents.environments import tf_py_environment
 from tf_agents.agents.sac import sac_agent
@@ -7,8 +6,6 @@ from tf_agents.networks import actor_distribution_network, critic_network
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
-from tf_agents.metrics import tf_metrics
-from tf_agents.drivers import dynamic_step_driver
 from tf_agents.policies import policy_saver
 
 # Load the BipedalWalker environment
@@ -23,16 +20,19 @@ eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 actor_net = actor_distribution_network.ActorDistributionNetwork(
     train_env.observation_spec(),
     train_env.action_spec(),
-    fc_layer_params=(256, 256))
+    fc_layer_params=(256, 256)
+)
 
 critic_net = critic_network.CriticNetwork(
     (train_env.observation_spec(), train_env.action_spec()),
     observation_fc_layer_params=None,
     action_fc_layer_params=None,
-    joint_fc_layer_params=(256, 256))
+    joint_fc_layer_params=(256, 256)
+)
 
-# Define the SAC agent
-optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=3e-4)
+optimizer = tf.compat.v1.train.AdamOptimizer(
+    learning_rate=3e-4
+)
 train_step_counter = tf.Variable(0)
 
 agent = sac_agent.SacAgent(
@@ -48,7 +48,8 @@ agent = sac_agent.SacAgent(
     td_errors_loss_fn=common.element_wise_squared_loss,
     gamma=0.99,
     reward_scale_factor=1.0,
-    train_step_counter=train_step_counter)
+    train_step_counter=train_step_counter
+)
 
 agent.initialize()
 
@@ -56,9 +57,12 @@ agent.initialize()
 replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
     data_spec=agent.collect_data_spec,
     batch_size=train_env.batch_size,
-    max_length=100000)
+    max_length=100000
+)
 
 # Define the data collection function
+
+
 def collect_step(environment, policy, buffer):
     time_step = environment.current_time_step()
     action_step = policy.action(time_step)
@@ -68,7 +72,10 @@ def collect_step(environment, policy, buffer):
     # Add trajectory to the replay buffer
     buffer.add_batch(traj)
 
+
 # Define the compute_avg_return function
+
+
 def compute_avg_return(environment, policy, num_episodes=10):
     total_return = 0.0
     for _ in range(num_episodes):
@@ -82,6 +89,7 @@ def compute_avg_return(environment, policy, num_episodes=10):
     avg_return = total_return / num_episodes
     return avg_return.numpy()[0]
 
+
 # Training the agent
 num_iterations = 20000
 collect_steps_per_iteration = 1
@@ -93,11 +101,13 @@ num_eval_episodes = 10
 dataset = replay_buffer.as_dataset(
     num_parallel_calls=3,
     sample_batch_size=64,
-    num_steps=2).prefetch(3)
+    num_steps=2
+).prefetch(3)
 
 iterator = iter(dataset)
 
-# (Optional) Optimize by wrapping some of the code in a graph using TF function.
+# (Optional) Optimize by wrapping some of the code in a graph using TF
+# function.
 agent.train = common.function(agent.train)
 
 # Reset the train step
@@ -119,11 +129,15 @@ for _ in range(num_iterations):
     step = agent.train_step_counter.numpy()
 
     if step % log_interval == 0:
-        print('step = {0}: loss = {1}'.format(step, train_loss))
+        print(f"step = {step}: "
+              f"loss = {train_loss}")
 
     if step % eval_interval == 0:
-        avg_return = compute_avg_return(eval_env, agent.policy, num_eval_episodes)
-        print('step = {0}: Average Return = {1}'.format(step, avg_return))
+        avg_return = compute_avg_return(
+            eval_env, agent.policy, num_eval_episodes
+        )
+        print(f"step = {step}: "
+              f"Average Return = {avg_return}")
         returns.append(avg_return)
 
 # Save the policy

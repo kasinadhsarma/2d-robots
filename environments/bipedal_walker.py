@@ -8,7 +8,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import error, spaces
 from gymnasium.error import DependencyNotInstalled
-from gymnasium.utils import EzPickle
+from gymnasium.utils import EzPickle, seeding
 
 
 try:
@@ -23,7 +23,8 @@ try:
     )
 except ImportError as e:
     raise DependencyNotInstalled(
-        'Box2D is not installed, you can install it by run `pip install swig` followed by `pip install "gymnasium[box2d]"`'
+        "Box2D is not installed, you can install it by run `pip install swig` "
+        'followed by `pip install "gymnasium[box2d]"`'
     ) from e
 
 
@@ -31,7 +32,7 @@ if TYPE_CHECKING:
     import pygame
 
 FPS = 50
-SCALE = 30.0  # affects how fast-paced the game is, forces should be adjusted as well
+SCALE = 30.0  # affects how fast-paced the game is, forces should be adjusted
 
 MOTORS_TORQUE = 80
 SPEED_HIP = 4
@@ -54,14 +55,311 @@ TERRAIN_GRASS = 10  # low long are grass spots, in steps
 TERRAIN_STARTPAD = 20  # in steps
 FRICTION = 2.5
 
+TERRAIN_STEPS = 20  # Define the missing constant
+GRAVITY = 9.8  # Define the missing constant
+
 HULL_FD = fixtureDef(
-    shape=polygonShape(vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]),
+    shape=polygonShape(
+        vertices=[(x / SCALE, y / SCALE) for x, y in HULL_POLY]
+    ),
     density=5.0,
     friction=0.1,
     categoryBits=0x0020,
     maskBits=0x001,  # collide only with ground
     restitution=0.0,
 )  # 0.99 bouncy
+
+
+class BipedalWalker(gym.Env):
+    metadata = {
+        "render.modes": ["human", "rgb_array"],
+        "video.frames_per_second": FPS,
+    }
+
+    def __init__(self):
+        self._seed()
+        self.viewer = None
+
+        self.world = Box2D.b2World()
+        self.terrain = None
+        self.hull = None
+
+        self.prev_shaping = None
+
+        self.fd_polygon = fixtureDef(
+            shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)]),
+            friction=0.1,
+        )
+
+        self.fd_edge = fixtureDef(
+            shape=edgeShape(vertices=[(0, 0), (1, 1)]),
+            friction=0.1,
+            categoryBits=0x0001,
+        )
+
+        self.reset()
+
+    def _destroy(self):
+        if not self.terrain:
+            return
+        for t in self.terrain:
+            self.world.DestroyBody(t)
+        self.terrain = []
+
+    def _generate_terrain(self, hardcore):
+        GRASS, STUMP, STAIRS, PIT = 0, 1, 2, 3
+        state = GRASS
+        velocity = 0.0
+        y = TERRAIN_HEIGHT
+        counter = TERRAIN_STARTPAD
+        oneshot = False
+        self.terrain = []
+        self.terrain_x = []
+        self.terrain_y = []
+        for i in range(TERRAIN_LENGTH):
+            x = i * TERRAIN_STEP
+            self.terrain_x.append(x)
+
+            if state == GRASS:
+                self.terrain_y.append(y)
+            elif state == STUMP:
+                self.terrain_y.append(y)
+                if oneshot:
+                    counter = TERRAIN_STEPS
+                    oneshot = False
+                if counter == 0:
+                    state = GRASS
+                    counter = TERRAIN_GRASS
+                else:
+                    counter -= 1
+            elif state == STAIRS:
+                self.terrain_y.append(y)
+                if oneshot:
+                    counter = TERRAIN_STEPS
+                    oneshot = False
+                if counter == 0:
+                    state = GRASS
+                    counter = TERRAIN_GRASS
+                else:
+                    counter -= 1
+            elif state == PIT:
+                self.terrain_y.append(y)
+                if oneshot:
+                    counter = TERRAIN_STEPS
+                    oneshot = False
+                if counter == 0:
+                    state = GRASS
+                    counter = TERRAIN_GRASS
+                else:
+                    counter -= 1
+
+            if state == GRASS:
+                if hardcore and np.random.rand() < 0.05:
+                    state = np.random.choice([STUMP, STAIRS, PIT])
+                    oneshot = True
+                    counter = TERRAIN_STEPS
+                else:
+                    counter -= 1
+
+            y += velocity
+            velocity += np.random.uniform(-1, 1) * TERRAIN_STEP
+            if y < TERRAIN_HEIGHT:
+                y = TERRAIN_HEIGHT
+                velocity = 0.0
+            if y > TERRAIN_HEIGHT + 2 * TERRAIN_STEP:
+                y = TERRAIN_HEIGHT + 2 * TERRAIN_STEP
+                velocity = 0.0
+
+        self.terrain_poly = []
+        for i in range(TERRAIN_LENGTH - 1):
+            poly = [
+                (self.terrain_x[i], self.terrain_y[i]),
+                (self.terrain_x[i + 1], self.terrain_y[i + 1]),
+                (self.terrain_x[i + 1], 0),
+                (self.terrain_x[i], 0),
+            ]
+            self.terrain_poly.append((poly, (0.3, 1.0, 0.3)))
+
+        self.terrain_poly.append(
+            (
+                [
+                    (self.terrain_x[-1], self.terrain_y[-1]),
+                    (self.terrain_x[-1] + TERRAIN_STEP, self.terrain_y[-1]),
+                    (self.terrain_x[-1] + TERRAIN_STEP, 0),
+                    (self.terrain_x[-1], 0),
+                ],
+                (0.3, 1.0, 0.3),
+            )  # rightmost grass
+        )
+
+        self.terrain = []
+        for poly, color in self.terrain_poly:
+            t = self.world.CreateStaticBody(
+                fixtures=fixtureDef(
+                    shape=polygonShape(vertices=poly),
+                    friction=0.1,
+                )
+            )
+            t.color1 = color
+            t.color2 = color
+            self.terrain.append(t)
+
+    def reset(self):
+        self._destroy()
+        self.world.contactListener_keepref = ContactDetector(self)
+        self.world.contactListener = self.world.contactListener_keepref
+
+        self.hull = self.world.CreateDynamicBody(
+            position=(VIEWPORT_W / SCALE / 2, VIEWPORT_H / SCALE / 2),
+            fixtures=HULL_FD,
+        )
+        self.hull.color1 = (0.5, 0.4, 0.9)
+        self.hull.color2 = (0.3, 0.3, 0.5)
+
+        self.hull.ApplyForceToCenter(
+            (np.random.uniform(-INITIAL_RANDOM, INITIAL_RANDOM), 0), True
+        )
+
+        self.legs = []
+        self.joints = []
+
+        for i in range(2):
+            leg = self.world.CreateDynamicBody(
+                position=(
+                    VIEWPORT_W / SCALE / 2,
+                    VIEWPORT_H / SCALE / 2 - LEG_H / 2 - LEG_DOWN,
+                ),
+                angle=(i * 0.05 - 0.05),
+                fixtures=LEG_FD,
+            )
+            leg.ground_contact = False
+            leg.color1 = (0.6, 0.3, 0.5)
+            leg.color2 = (0.4, 0.2, 0.3)
+            rjd = revoluteJointDef(
+                bodyA=self.hull,
+                bodyB=leg,
+                localAnchorA=(0, LEG_DOWN),
+                localAnchorB=(0, LEG_H / 2),
+                enableMotor=True,
+                enableLimit=True,
+                maxMotorTorque=MOTORS_TORQUE,
+                motorSpeed=1,
+                lowerAngle=-0.8,
+                upperAngle=1.1,
+            )
+            self.joints.append(self.world.CreateJoint(rjd))
+            self.legs.append(leg)
+
+        self.drawlist = self.terrain + self.legs + [self.hull]
+
+        return self.step(np.array([0, 0, 0, 0]))[0]
+
+    def step(self, action):
+        self.hull.ApplyForceToCenter((0, -GRAVITY * self.hull.mass), True)
+        for i in range(2):
+            self.joints[i].motorSpeed = float(
+                MOTORS_TORQUE * np.clip(action[i], -1, 1)
+            )
+        self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
+
+        pos = self.hull.position
+        vel = self.hull.linearVelocity
+
+        state = [
+            (pos.x - VIEWPORT_W / SCALE / 2) / (VIEWPORT_W / SCALE / 2),
+            (pos.y - (VIEWPORT_H / SCALE / 4)) / (VIEWPORT_H / SCALE / 4),
+            vel.x * (VIEWPORT_W / SCALE / 2) / FPS,
+            vel.y * (VIEWPORT_H / SCALE / 4) / FPS,
+        ]
+
+        for i in range(2):
+            state += [
+                self.legs[i].position.x - pos.x,
+                self.legs[i].position.y - pos.y,
+                self.legs[i].linearVelocity.x * (VIEWPORT_W / SCALE / 2) / FPS,
+                self.legs[i].linearVelocity.y * (VIEWPORT_H / SCALE / 4) / FPS,
+                self.joints[i].angle,
+                self.joints[i].speed / FPS,
+            ]
+
+        reward = 0
+        shaping = (
+            130 * pos[0] / SCALE
+            - 5.0 * abs(state[0])
+            - 5.0 * abs(state[1])
+            - 0.1 * abs(state[2])
+            - 0.1 * abs(state[3])
+        )
+        if self.prev_shaping is not None:
+            reward = shaping - self.prev_shaping
+        self.prev_shaping = shaping
+
+        reward -= 0.00035 * np.square(action).sum()
+
+        done = False
+        if self.hull.position.y < 0:
+            done = True
+            reward = -100
+
+        return np.array(state), reward, done, {}
+
+    def render(self, mode="human"):
+        from gym.envs.classic_control import rendering
+
+        if self.viewer is None:
+            self.viewer = rendering.Viewer(VIEWPORT_W, VIEWPORT_H)
+            self.viewer.set_bounds(
+                0, VIEWPORT_W / SCALE, 0, VIEWPORT_H / SCALE
+            )
+
+        for obj in self.drawlist:
+            for f in obj.fixtures:
+                trans = f.body.transform
+                if type(f.shape) is circleShape:
+                    t = rendering.Transform(translation=trans * f.shape.pos)
+                    self.viewer.draw_circle(
+                        f.shape.radius, 30, color=obj.color1
+                    ).add_attr(t)
+                    self.viewer.draw_circle(
+                        f.shape.radius,
+                        30,
+                        color=obj.color2,
+                        filled=False,
+                        linewidth=2,
+                    ).add_attr(t)
+                else:
+                    path = [trans * v for v in f.shape.vertices]
+                    self.viewer.draw_polygon(path, color=obj.color1)
+                    path.append(path[0])
+                    self.viewer.draw_polyline(
+                        path, color=obj.color2, linewidth=2
+                    )
+
+        flagy1 = TERRAIN_HEIGHT
+        flagy2 = flagy1 + 50 / SCALE
+        self.viewer.draw_polyline(
+            [(self.terrain_x[-1], flagy1), (self.terrain_x[-1], flagy2)],
+            color=(0, 0, 0),
+            linewidth=2,
+        )
+        f = [
+            (self.terrain_x[-1], flagy2),
+            (self.terrain_x[-1], flagy2 - 10 / SCALE),
+            (self.terrain_x[-1] + 25 / SCALE, flagy2 - 5 / SCALE),
+        ]
+        self.viewer.draw_polygon(f, color=(0.9, 0.2, 0))
+
+        return self.viewer.render(return_rgb_array=mode == "rgb_array")
+
+    def close(self):
+        if self.viewer:
+            self.viewer.close()
+            self.viewer = None
+
+    def _seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
+
 
 LEG_FD = fixtureDef(
     shape=polygonShape(box=(LEG_W / 2, LEG_H / 2)),
@@ -101,7 +399,7 @@ class ContactDetector(contactListener):
                 leg.ground_contact = False
 
 
-class BipedalWalker(gym.Env, EzPickle):
+class BipedalWalkerV2(gym.Env, EzPickle):
     """
     ## Description
     This is a simple 4-joint walker robot environment.
@@ -125,8 +423,8 @@ class BipedalWalker(gym.Env, EzPickle):
     ## Observation Space
     State consists of hull angle speed, angular velocity, horizontal speed,
     vertical speed, position of joints and joints angular speed, legs contact
-    with ground, and 10 lidar rangefinder measurements. There are no coordinates
-    in the state vector.
+    with ground, and 10 lidar rangefinder measurements.
+    There are no coordinates in the state vector.
 
     ## Rewards
     Reward is given for moving forward, totaling 300+ points up to the far end.
@@ -147,10 +445,12 @@ class BipedalWalker(gym.Env, EzPickle):
 
     ```python
     >>> import gymnasium as gym
-    >>> env = gym.make("BipedalWalker-v3", hardcore=True, render_mode="rgb_array")
+    >>> env = gym.make(
+        "BipedalWalker-v3", hardcore=True, render_mode="rgb_array"
+    )
     >>> env
-    <TimeLimit<OrderEnforcing<PassiveEnvChecker<BipedalWalker<BipedalWalker-v3>>>>>
-
+    <TimeLimit<OrderEnforcing<PassiveEnvChecker<BipedalWalker<
+    BipedalWalker-v3>>>>>
     ```
 
     ## Version History
@@ -166,7 +466,6 @@ class BipedalWalker(gym.Env, EzPickle):
 
     ## Credits
     Created by Oleg Klimov
-
     """
 
     metadata = {
@@ -174,7 +473,9 @@ class BipedalWalker(gym.Env, EzPickle):
         "render_fps": FPS,
     }
 
-    def __init__(self, render_mode: Optional[str] = None, hardcore: bool = False):
+    def __init__(
+        self, render_mode: Optional[str] = None, hardcore: bool = False
+    ):
         EzPickle.__init__(self, render_mode, hardcore)
         self.isopen = True
 
@@ -363,7 +664,9 @@ class BipedalWalker(gym.Env, EzPickle):
             self.terrain_y.append(y)
             counter -= 1
             if counter == 0:
-                counter = self.np_random.integers(TERRAIN_GRASS / 2, TERRAIN_GRASS)
+                counter = self.np_random.integers(
+                    TERRAIN_GRASS / 2, TERRAIN_GRASS
+                )
                 if state == GRASS and hardcore:
                     state = self.np_random.integers(1, _STATES_)
                     oneshot = True
@@ -505,13 +808,23 @@ class BipedalWalker(gym.Env, EzPickle):
     def step(self, action: np.ndarray):
         assert self.hull is not None
 
-        # self.hull.ApplyForceToCenter((0, 20), True) -- Uncomment this to receive a bit of stability help
+        # self.hull.ApplyForceToCenter(
+        #     (0, 20), True
+        # )  # Uncomment this to receive a bit of stability help
         control_speed = False  # Should be easier as well
         if control_speed:
-            self.joints[0].motorSpeed = float(SPEED_HIP * np.clip(action[0], -1, 1))
-            self.joints[1].motorSpeed = float(SPEED_KNEE * np.clip(action[1], -1, 1))
-            self.joints[2].motorSpeed = float(SPEED_HIP * np.clip(action[2], -1, 1))
-            self.joints[3].motorSpeed = float(SPEED_KNEE * np.clip(action[3], -1, 1))
+            self.joints[0].motorSpeed = float(
+                SPEED_HIP * np.clip(action[0], -1, 1)
+            )
+            self.joints[1].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[1], -1, 1)
+            )
+            self.joints[2].motorSpeed = float(
+                SPEED_HIP * np.clip(action[2], -1, 1)
+            )
+            self.joints[3].motorSpeed = float(
+                SPEED_KNEE * np.clip(action[3], -1, 1)
+            )
         else:
             self.joints[0].motorSpeed = float(SPEED_HIP * np.sign(action[0]))
             self.joints[0].maxMotorTorque = float(
@@ -530,70 +843,75 @@ class BipedalWalker(gym.Env, EzPickle):
                 MOTORS_TORQUE * np.clip(np.abs(action[3]), 0, 1)
             )
 
-    self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
+        self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
 
-    pos = self.hull.position
-    vel = self.hull.linearVelocity
+        pos = self.hull.position
+        vel = self.hull.linearVelocity
 
-    for i in range(10):
-        self.lidar[i].fraction = 1.0
-        self.lidar[i].p1 = pos
-        self.lidar[i].p2 = (
-            pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
-            pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
-        )
-        self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+        for i in range(10):
+            self.lidar[i].fraction = 1.0
+            self.lidar[i].p1 = pos
+            self.lidar[i].p2 = (
+                pos[0] + math.sin(1.5 * i / 10.0) * LIDAR_RANGE,
+                pos[1] - math.cos(1.5 * i / 10.0) * LIDAR_RANGE,
+            )
+            self.world.RayCast(
+                self.lidar[i], self.lidar[i].p1, self.lidar[i].p2
+            )
 
-    state = [
-        self.hull.angle,
-        2.0 * self.hull.angularVelocity / FPS,
-        0.3 * vel.x * (VIEWPORT_W / SCALE) / FPS,
-        0.3 * vel.y * (VIEWPORT_H / SCALE) / FPS,
-        self.joints[0].angle,
-        self.joints[0].speed / SPEED_HIP,
-        self.joints[1].angle + 1.0,
-        self.joints[1].speed / SPEED_KNEE,
-        1.0 if self.legs[1].ground_contact else 0.0,
-        self.joints[2].angle,
-        self.joints[2].speed / SPEED_HIP,
-        self.joints[3].angle + 1.0,
-        self.joints[3].speed / SPEED_KNEE,
-        1.0 if self.legs[3].ground_contact else 0.0,
-    ]
-    state += [l.fraction for l in self.lidar]
-    assert len(state) == 24
+        state = [
+            self.hull.angle,
+            2.0 * self.hull.angularVelocity / FPS,
+            0.3 * vel.x * (VIEWPORT_W / SCALE) / FPS,
+            0.3 * vel.y * (VIEWPORT_H / SCALE) / FPS,
+            self.joints[0].angle,
+            self.joints[0].speed / SPEED_HIP,
+            self.joints[1].angle + 1.0,
+            self.joints[1].speed / SPEED_KNEE,
+            1.0 if self.legs[1].ground_contact else 0.0,
+            self.joints[2].angle,
+            self.joints[2].speed / SPEED_HIP,
+            self.joints[3].angle + 1.0,
+            self.joints[3].speed / SPEED_KNEE,
+            1.0 if self.legs[3].ground_contact else 0.0,
+        ]
+        state += [lidar_sensor.fraction for lidar_sensor in self.lidar]
+        assert len(state) == 24
 
-    self.scroll = pos.x - VIEWPORT_W / SCALE / 5
+        self.scroll = pos.x - VIEWPORT_W / SCALE / 5
 
-    shaping = 200 * pos[0] / SCALE  # Adjusted reward shaping for digital walking
-    shaping -= 20.0 * abs(state[0])  # Increased penalty for head tilt
+        shaping = 200 * pos[0] / SCALE  # Adjusted reward shaping
+        # for digital walking
+        shaping -= 20.0 * abs(state[0])  # Increased penalty for head tilt
 
-    reward = 0
-    if self.prev_shaping is not None:
-        reward = shaping - self.prev_shaping
-    self.prev_shaping = shaping
+        reward = 0
+        if self.prev_shaping is not None:
+            reward = shaping - self.prev_shaping
+        self.prev_shaping = shaping
 
-    for a in action:
-        reward -= 0.001 * MOTORS_TORQUE * np.clip(np.abs(a), 0, 1)  # Adjusted motor penalty
+        for a in action:
+            reward -= (
+                0.001 * MOTORS_TORQUE * np.clip(np.abs(a), 0, 1)
+            )  # Adjusted motor penalty
 
-    terminated = False
-    if self.game_over or pos[0] < 0:
-        reward = -100
-        terminated = True
-    if pos[0] > (TERRAIN_LENGTH - TERRAIN_GRASS) * TERRAIN_STEP:
-        terminated = True
+        terminated = False
+        if self.game_over or pos[0] < 0:
+            reward = -100
+            terminated = True
+        if pos[0] > (TERRAIN_LENGTH - TERRAIN_GRASS) * TERRAIN_STEP:
+            terminated = True
 
-    if self.render_mode == "human":
-        self.render()
-    return np.array(state, dtype=np.float32), reward, terminated, False, {}
+        if self.render_mode == "human":
+            self.render()
+        return np.array(state, dtype=np.float32), reward, terminated, False, {}
 
     def render(self):
         if self.render_mode is None:
             assert self.spec is not None
             gym.logger.warn(
-                "You are calling render method without specifying any render mode. "
-                "You can specify the render_mode at initialization, "
-                f'e.g. gym.make("{self.spec.id}", render_mode="rgb_array")'
+                f"You are calling render method without specifying any render "
+                f"mode. You can specify the render_mode at initialization, "
+                f'gym.make("{self.spec.id}", render_mode="rgb_array")'
             )
             return
 
@@ -634,18 +952,14 @@ class BipedalWalker(gym.Env, EzPickle):
                 continue
             if x1 > self.scroll / 2 + VIEWPORT_W / SCALE:
                 continue
+            points = [
+                (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE)
+                for p in poly
+            ]
             pygame.draw.polygon(
-                self.surf,
-                color=(255, 255, 255),
-                points=[
-                    (p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly
-                ],
+                self.surf, color=(255, 255, 255), points=points
             )
-            gfxdraw.aapolygon(
-                self.surf,
-                [(p[0] * SCALE + self.scroll * SCALE / 2, p[1] * SCALE) for p in poly],
-                (255, 255, 255),
-            )
+            gfxdraw.aapolygon(self.surf, points, (255, 255, 255))
         for poly, color in self.terrain_poly:
             if poly[1][0] < self.scroll:
                 continue
@@ -656,7 +970,6 @@ class BipedalWalker(gym.Env, EzPickle):
                 scaled_poly.append([coord[0] * SCALE, coord[1] * SCALE])
             pygame.draw.polygon(self.surf, color=color, points=scaled_poly)
             gfxdraw.aapolygon(self.surf, scaled_poly, color)
-
         self.lidar_render = (self.lidar_render + 1) % 100
         i = self.lidar_render
         if i < 2 * len(self.lidar):
@@ -669,8 +982,14 @@ class BipedalWalker(gym.Env, EzPickle):
                 pygame.draw.line(
                     self.surf,
                     color=(255, 0, 0),
-                    start_pos=(single_lidar.p1[0] * SCALE, single_lidar.p1[1] * SCALE),
-                    end_pos=(single_lidar.p2[0] * SCALE, single_lidar.p2[1] * SCALE),
+                    start_pos=(
+                        single_lidar.p1[0] * SCALE,
+                        single_lidar.p1[1] * SCALE,
+                    ),
+                    end_pos=(
+                        single_lidar.p2[0] * SCALE,
+                        single_lidar.p2[1] * SCALE,
+                    ),
                     width=1,
                 )
 
@@ -693,7 +1012,9 @@ class BipedalWalker(gym.Env, EzPickle):
                 else:
                     path = [trans * v * SCALE for v in f.shape.vertices]
                     if len(path) > 2:
-                        pygame.draw.polygon(self.surf, color=obj.color1, points=path)
+                        pygame.draw.polygon(
+                            self.surf, color=obj.color1, points=path
+                        )
                         gfxdraw.aapolygon(self.surf, path, obj.color1)
                         path.append(path[0])
                         pygame.draw.polygon(
@@ -712,7 +1033,10 @@ class BipedalWalker(gym.Env, EzPickle):
         flagy2 = flagy1 + 50
         x = TERRAIN_STEP * 3 * SCALE
         pygame.draw.aaline(
-            self.surf, color=(0, 0, 0), start_pos=(x, flagy1), end_pos=(x, flagy2)
+            self.surf,
+            color=(0, 0, 0),
+            start_pos=(x, flagy1),
+            end_pos=(x, flagy2),
         )
         f = [
             (x, flagy2),
@@ -721,7 +1045,7 @@ class BipedalWalker(gym.Env, EzPickle):
         ]
         pygame.draw.polygon(self.surf, color=(230, 51, 0), points=f)
         pygame.draw.lines(
-            self.surf, color=(0, 0, 0), points=f + [f[0]], width=1, closed=False
+            self.surf, color=(0, 0, 0), points=f + [f[0]], width=1
         )
 
         self.surf = pygame.transform.flip(self.surf, False, True)
@@ -750,8 +1074,10 @@ class BipedalWalkerHardcore:
     def __init__(self):
         raise error.Error(
             "Error initializing BipedalWalkerHardcore Environment.\n"
-            "Currently, we do not support initializing this mode of environment by calling the class directly.\n"
-            "To use this environment, instead create it by specifying the hardcore keyword in gym.make, i.e.\n"
+            "Currently, we do not support initializing this mode of "
+            "environment by calling the class directly.\n"
+            "To use this environment, instead create it by specifying the "
+            "hardcore keyword in gym.make, i.e.\n"
             'gym.make("BipedalWalker-v3", hardcore=True)'
         )
 
